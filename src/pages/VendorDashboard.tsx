@@ -200,7 +200,7 @@ const VendorDashboard = () => {
             >
               {isLive ? (
                 <>
-                  <RadioOff className="w-5 h-5" /> Go Offline
+                  <CircleOff className="w-5 h-5" /> Go Offline
                 </>
               ) : (
                 <>
