@@ -2,18 +2,53 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const VendorAuth = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { signUp, signIn } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) throw error;
+        toast.success("Welcome back!");
+        navigate("/dashboard");
+      } else {
+        const { error } = await signUp(email, password, {
+          full_name: name,
+          business_name: businessName,
+          billing_cycle: billingCycle,
+          role: "vendor",
+        });
+        if (error) throw error;
+        toast.success("Account created! Check your email to verify.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left - form */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -35,30 +70,26 @@ const VendorAuth = () => {
             {isLogin ? "Welcome Back, Operator!" : "List Your Ice Cream Van"}
           </h1>
           <p className="text-muted-foreground font-body mb-6">
-            {isLogin
-              ? "Sign in to manage your van and routes."
-              : "Start your 2-week free trial. No card required to sign up."}
+            {isLogin ? "Sign in to manage your van and routes." : "Start your 2-week free trial. No card required to sign up."}
           </p>
 
           {!isLogin && (
             <div className="mb-6">
               <div className="flex bg-muted rounded-lg p-1 mb-4">
                 <button
+                  type="button"
                   onClick={() => setBillingCycle("monthly")}
                   className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
-                    billingCycle === "monthly"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground"
+                    billingCycle === "monthly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                   }`}
                 >
                   Monthly — £7.99/mo
                 </button>
                 <button
+                  type="button"
                   onClick={() => setBillingCycle("yearly")}
                   className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
-                    billingCycle === "yearly"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground"
+                    billingCycle === "yearly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                   }`}
                 >
                   Yearly — £59.99/yr
@@ -72,45 +103,41 @@ const VendorAuth = () => {
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {!isLogin && (
               <>
                 <div>
                   <Label htmlFor="businessName" className="font-body">Business Name</Label>
-                  <Input id="businessName" placeholder="e.g. Tony's Ices" className="mt-1.5" />
+                  <Input id="businessName" placeholder="e.g. Tony's Ices" className="mt-1.5" value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
                 </div>
                 <div>
                   <Label htmlFor="name" className="font-body">Your Name</Label>
-                  <Input id="name" placeholder="Your full name" className="mt-1.5" />
+                  <Input id="name" placeholder="Your full name" className="mt-1.5" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
               </>
             )}
             <div>
               <Label htmlFor="email" className="font-body">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" className="mt-1.5" />
+              <Input id="email" type="email" placeholder="you@example.com" className="mt-1.5" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div>
               <Label htmlFor="password" className="font-body">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" className="mt-1.5" />
+              <Input id="password" type="password" placeholder="••••••••" className="mt-1.5" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
-            <Button variant="hero" size="lg" className="w-full mt-2">
-              {isLogin ? "Sign In" : "Start 2-Week Free Trial"}
+            <Button variant="hero" size="lg" className="w-full mt-2" disabled={submitting}>
+              {submitting ? "Please wait…" : isLogin ? "Sign In" : "Start 2-Week Free Trial"}
             </Button>
           </form>
 
           {!isLogin && (
             <p className="text-muted-foreground font-body text-xs text-center mt-3">
-              After your free trial, you'll be charged {billingCycle === "monthly" ? "£7.99/month" : "£59.99/year"}.
-              Cancel anytime.
+              After your free trial, you'll be charged {billingCycle === "monthly" ? "£7.99/month" : "£59.99/year"}. Cancel anytime.
             </p>
           )}
 
           <p className="text-center text-muted-foreground font-body text-sm mt-6">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary font-semibold hover:underline"
-            >
+            <button onClick={() => setIsLogin(!isLogin)} className="text-primary font-semibold hover:underline">
               {isLogin ? "Start free trial" : "Sign in"}
             </button>
           </p>
@@ -123,7 +150,6 @@ const VendorAuth = () => {
         </motion.div>
       </div>
 
-      {/* Right - benefits */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/20 items-center justify-center p-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

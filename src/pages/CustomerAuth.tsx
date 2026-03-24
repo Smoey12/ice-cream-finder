@@ -2,16 +2,48 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const CustomerAuth = () => {
   const [isLogin, setIsLogin] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { signUp, signIn } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) throw error;
+        toast.success("Welcome back!");
+        navigate("/map");
+      } else {
+        const { error } = await signUp(email, password, {
+          full_name: name,
+          role: "customer",
+        });
+        if (error) throw error;
+        toast.success("Account created! Check your email to verify.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left - form */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -36,32 +68,29 @@ const CustomerAuth = () => {
             {isLogin ? "Sign in to find your favourite vans." : "Create a free account to track ice cream vans near you."}
           </p>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {!isLogin && (
               <div>
                 <Label htmlFor="name" className="font-body">Full Name</Label>
-                <Input id="name" placeholder="Your name" className="mt-1.5" />
+                <Input id="name" placeholder="Your name" className="mt-1.5" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
             )}
             <div>
               <Label htmlFor="email" className="font-body">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" className="mt-1.5" />
+              <Input id="email" type="email" placeholder="you@example.com" className="mt-1.5" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div>
               <Label htmlFor="password" className="font-body">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" className="mt-1.5" />
+              <Input id="password" type="password" placeholder="••••••••" className="mt-1.5" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
-            <Button variant="mint" size="lg" className="w-full mt-2">
-              {isLogin ? "Sign In" : "Create Free Account"}
+            <Button variant="mint" size="lg" className="w-full mt-2" disabled={submitting}>
+              {submitting ? "Please wait…" : isLogin ? "Sign In" : "Create Free Account"}
             </Button>
           </form>
 
           <p className="text-center text-muted-foreground font-body text-sm mt-6">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-secondary font-semibold hover:underline"
-            >
+            <button onClick={() => setIsLogin(!isLogin)} className="text-secondary font-semibold hover:underline">
               {isLogin ? "Sign up free" : "Sign in"}
             </button>
           </p>
@@ -74,7 +103,6 @@ const CustomerAuth = () => {
         </motion.div>
       </div>
 
-      {/* Right - decorative */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-secondary/20 via-secondary/10 to-accent/20 items-center justify-center p-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
