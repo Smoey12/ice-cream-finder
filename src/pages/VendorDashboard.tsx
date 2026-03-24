@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
-import { LogOut, MapPin, Radio, RadioOff, Navigation } from "lucide-react";
+import { LogOut, MapPin, Radio, CircleOff, Navigation } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
