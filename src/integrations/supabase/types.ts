@@ -14,7 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          billing_cycle: string | null
+          business_name: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string | null
+          business_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string | null
+          business_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vendor_locations: {
+        Row: {
+          id: string
+          is_live: boolean
+          last_updated: string
+          latitude: number
+          longitude: number
+          vendor_id: string
+        }
+        Insert: {
+          id?: string
+          is_live?: boolean
+          last_updated?: string
+          latitude: number
+          longitude: number
+          vendor_id: string
+        }
+        Update: {
+          id?: string
+          is_live?: boolean
+          last_updated?: string
+          latitude?: number
+          longitude?: number
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_locations_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +93,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "customer" | "vendor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +220,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["customer", "vendor"],
+    },
   },
 } as const
