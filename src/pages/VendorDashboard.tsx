@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { LogOut, MapPin, Radio, CircleOff, Navigation } from "lucide-react";
+import VanPhotoUpload from "@/components/VanPhotoUpload";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
