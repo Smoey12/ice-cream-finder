@@ -25,6 +25,7 @@ const Footer = () => {
               Founded by &lt;cons&gt;&lt;/coding&gt;
             </p>
           </div>
+        </div>
       </div>
     </footer>
   );
