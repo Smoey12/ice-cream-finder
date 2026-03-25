@@ -143,7 +143,7 @@ const VendorDashboard = () => {
     );
   }
 
-  const trialDaysLeft = profile.trial_ends_at
+  const trialDaysLeft = profile?.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
