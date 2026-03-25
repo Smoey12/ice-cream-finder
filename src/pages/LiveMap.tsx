@@ -15,6 +15,7 @@ interface VanLocation {
   is_live: boolean;
   last_updated: string;
   business_name?: string;
+  van_photo_url?: string | null;
 }
 
 const LiveMap = () => {
@@ -24,19 +25,12 @@ const LiveMap = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [fetching, setFetching] = useState(true);
 
-  useEffect(() => {
-    // Dev bypass: skip auth redirect
-    // if (!loading && !user) {
-    //   navigate("/auth/customer");
-    // }
-  }, [user, loading, navigate]);
-
   // Get user's location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setUserLocation({ lat: 51.5074, lng: -0.1278 }) // Default to London
+        () => setUserLocation({ lat: 51.5074, lng: -0.1278 })
       );
     }
   }, []);
@@ -45,13 +39,14 @@ const LiveMap = () => {
     setFetching(true);
     const { data } = await supabase
       .from("vendor_locations")
-      .select("*, profiles:vendor_id(business_name)")
+      .select("*, profiles:vendor_id(business_name, van_photo_url)")
       .eq("is_live", true);
 
     if (data) {
       const mapped = data.map((v: any) => ({
         ...v,
         business_name: v.profiles?.business_name || "Ice Cream Van",
+        van_photo_url: v.profiles?.van_photo_url || null,
       }));
       setVans(mapped);
     }
@@ -59,13 +54,11 @@ const LiveMap = () => {
   };
 
   useEffect(() => {
-    if (user) fetchVans();
-  }, [user]);
+    fetchVans();
+  }, []);
 
   // Realtime subscription
   useEffect(() => {
-    if (!user) return;
-
     const channel = supabase
       .channel("live-vans")
       .on(
@@ -76,10 +69,10 @@ const LiveMap = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, []);
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 3959; // miles
+    const R = 3959;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
     const a =
@@ -99,8 +92,7 @@ const LiveMap = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="min-h-screen bg-background pb-12">
       <nav className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -114,9 +106,11 @@ const LiveMap = () => {
               <RefreshCw className={`w-4 h-4 ${fetching ? "animate-spin" : ""}`} />
               Refresh
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }}>
-              <LogOut className="w-4 h-4" />
-            </Button>
+            {user && (
+              <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate("/"); }}>
+                <LogOut className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </nav>
@@ -159,39 +153,56 @@ const LiveMap = () => {
                       key={van.id}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-shadow"
+                      className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg transition-shadow"
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="font-display text-lg font-bold text-foreground">
-                            🚐 {van.business_name}
-                          </h3>
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-                            <span className="text-secondary font-body text-sm font-semibold">Live Now</span>
-                          </div>
+                      {/* Van photo */}
+                      {van.van_photo_url ? (
+                        <div className="w-full h-40 overflow-hidden">
+                          <img
+                            src={van.van_photo_url}
+                            alt={`${van.business_name} van`}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        {dist !== null && (
-                          <span className="bg-sky/10 text-sky font-display text-sm font-semibold px-3 py-1 rounded-full">
-                            {dist < 1 ? `${(dist * 1760).toFixed(0)} yds` : `${dist.toFixed(1)} mi`}
-                          </span>
-                        )}
-                      </div>
+                      ) : (
+                        <div className="w-full h-40 bg-muted flex items-center justify-center">
+                          <span className="text-5xl">🚐</span>
+                        </div>
+                      )}
 
-                      <div className="flex items-center gap-2 text-muted-foreground font-body text-sm mb-4">
-                        <MapPin className="w-4 h-4" />
-                        <span>{van.latitude.toFixed(4)}, {van.longitude.toFixed(4)}</span>
-                      </div>
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="font-display text-lg font-bold text-foreground">
+                              🚐 {van.business_name}
+                            </h3>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+                              <span className="text-secondary font-body text-sm font-semibold">Live Now</span>
+                            </div>
+                          </div>
+                          {dist !== null && (
+                            <span className="bg-sky/10 text-sky font-display text-sm font-semibold px-3 py-1 rounded-full">
+                              {dist < 1 ? `${(dist * 1760).toFixed(0)} yds` : `${dist.toFixed(1)} mi`}
+                            </span>
+                          )}
+                        </div>
 
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${van.latitude},${van.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button variant="mint" size="sm" className="w-full">
-                          Get Directions 🗺️
-                        </Button>
-                      </a>
+                        <div className="flex items-center gap-2 text-muted-foreground font-body text-sm mb-4">
+                          <MapPin className="w-4 h-4" />
+                          <span>{van.latitude.toFixed(4)}, {van.longitude.toFixed(4)}</span>
+                        </div>
+
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${van.latitude},${van.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="mint" size="sm" className="w-full">
+                            Get Directions 🗺️
+                          </Button>
+                        </a>
+                      </div>
                     </motion.div>
                   );
                 })}

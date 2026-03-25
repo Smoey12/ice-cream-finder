@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { LogOut, MapPin, Radio, CircleOff, Navigation } from "lucide-react";
+import VanPhotoUpload from "@/components/VanPhotoUpload";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -217,6 +218,15 @@ const VendorDashboard = () => {
               </div>
             )}
           </div>
+
+          {/* Van Photo Upload */}
+          {user && (
+            <VanPhotoUpload
+              userId={user.id}
+              currentPhotoUrl={profile?.van_photo_url || null}
+              onPhotoUpdated={() => fetchData()}
+            />
+          )}
 
           {/* Profile */}
           <div className="bg-card rounded-xl border border-border p-6">

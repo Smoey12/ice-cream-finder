@@ -25,6 +25,7 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
           trial_ends_at: string | null
           updated_at: string
+          van_photo_url: string | null
         }
         Insert: {
           billing_cycle?: string | null
@@ -36,6 +37,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           trial_ends_at?: string | null
           updated_at?: string
+          van_photo_url?: string | null
         }
         Update: {
           billing_cycle?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           trial_ends_at?: string | null
           updated_at?: string
+          van_photo_url?: string | null
         }
         Relationships: []
       }
