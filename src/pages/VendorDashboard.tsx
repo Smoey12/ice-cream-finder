@@ -219,6 +219,15 @@ const VendorDashboard = () => {
             )}
           </div>
 
+          {/* Van Photo Upload */}
+          {user && (
+            <VanPhotoUpload
+              userId={user.id}
+              currentPhotoUrl={profile?.van_photo_url || null}
+              onPhotoUpdated={() => fetchData()}
+            />
+          )}
+
           {/* Profile */}
           <div className="bg-card rounded-xl border border-border p-6">
             <h2 className="font-display text-xl font-bold text-foreground mb-4">
