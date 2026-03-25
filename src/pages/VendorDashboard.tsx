@@ -143,7 +143,7 @@ const VendorDashboard = () => {
     );
   }
 
-  const trialDaysLeft = profile.trial_ends_at
+  const trialDaysLeft = profile?.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
@@ -180,7 +180,7 @@ const VendorDashboard = () => {
                 🎉 Free Trial — {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining
               </p>
               <p className="font-body text-sm text-muted-foreground">
-                {profile.billing_cycle === "yearly" ? "£59.99/year" : "£7.99/month"} after trial ends
+                {profile?.billing_cycle === "yearly" ? "£59.99/year" : "£7.99/month"} after trial ends
               </p>
             </div>
           )}
@@ -250,7 +250,7 @@ const VendorDashboard = () => {
               <div>
                 <Label className="font-body">Plan</Label>
                 <Input
-                  value={profile.billing_cycle === "yearly" ? "Annual — £59.99/yr" : "Monthly — £7.99/mo"}
+                  value={profile?.billing_cycle === "yearly" ? "Annual — £59.99/yr" : "Monthly — £7.99/mo"}
                   disabled
                   className="mt-1.5 opacity-60"
                 />
