@@ -21,9 +21,10 @@ const VendorDashboard = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth/vendor");
-    }
+    // Dev bypass: skip auth redirect
+    // if (!loading && !user) {
+    //   navigate("/auth/vendor");
+    // }
   }, [user, loading, navigate]);
 
   const fetchData = useCallback(async () => {
@@ -133,7 +134,7 @@ const VendorDashboard = () => {
     };
   }, [watchId]);
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-4xl animate-float">🚐</div>

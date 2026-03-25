@@ -25,9 +25,10 @@ const LiveMap = () => {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth/customer");
-    }
+    // Dev bypass: skip auth redirect
+    // if (!loading && !user) {
+    //   navigate("/auth/customer");
+    // }
   }, [user, loading, navigate]);
 
   // Get user's location

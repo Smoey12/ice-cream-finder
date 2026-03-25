@@ -9,6 +9,7 @@ import CustomerAuth from "./pages/CustomerAuth.tsx";
 import VendorAuth from "./pages/VendorAuth.tsx";
 import LiveMap from "./pages/LiveMap.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
+import DevNav from "./components/DevNav.tsx";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <DevNav />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
