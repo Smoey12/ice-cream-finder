@@ -21,9 +21,10 @@ const VendorDashboard = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth/vendor");
-    }
+    // Dev bypass: skip auth redirect
+    // if (!loading && !user) {
+    //   navigate("/auth/vendor");
+    // }
   }, [user, loading, navigate]);
 
   const fetchData = useCallback(async () => {
