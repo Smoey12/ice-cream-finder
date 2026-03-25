@@ -17,10 +17,14 @@ const Footer = () => {
             <Link to="/#features" className="hover:text-primary-foreground transition-colors">Features</Link>
             <Link to="/#pricing" className="hover:text-primary-foreground transition-colors">Pricing</Link>
           </div>
-          <p className="text-primary-foreground/40 font-body text-sm">
-            © {new Date().getFullYear()} UK Ice Cream Van Tracker. All rights reserved.
-          </p>
-        </div>
+          <div className="text-center md:text-right">
+            <p className="text-primary-foreground/40 font-body text-sm">
+              © {new Date().getFullYear()} UK Ice Cream Van Tracker. All rights reserved.
+            </p>
+            <p className="text-primary-foreground/30 font-body text-xs mt-1">
+              Founded by &lt;cons&gt;&lt;/coding&gt;
+            </p>
+          </div>
       </div>
     </footer>
   );
