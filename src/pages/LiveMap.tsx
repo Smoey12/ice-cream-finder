@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { LogOut, MapPin, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import UKMap from "@/components/UKMap";
 
 interface VanLocation {
   id: string;
@@ -120,12 +121,16 @@ const LiveMap = () => {
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
             🍦 Ice Cream Vans Near You
           </h1>
-          <p className="text-muted-foreground font-body mb-8">
+          <p className="text-muted-foreground font-body mb-6">
             {vans.length} van{vans.length !== 1 ? "s" : ""} currently live
             {userLocation && " • Sorted by distance"}
           </p>
 
+          {/* Full UK Map */}
+          <UKMap vans={vans} userLocation={userLocation} />
+
           {vans.length === 0 ? (
+            <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
             <div className="bg-card rounded-xl border border-border p-12 text-center">
               <div className="text-6xl mb-4">😢</div>
               <h2 className="font-display text-xl font-bold text-foreground mb-2">
