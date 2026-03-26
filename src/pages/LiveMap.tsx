@@ -131,7 +131,6 @@ const LiveMap = () => {
 
           {vans.length === 0 ? (
             <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
-            <div className="bg-card rounded-xl border border-border p-12 text-center">
               <div className="text-6xl mb-4">😢</div>
               <h2 className="font-display text-xl font-bold text-foreground mb-2">
                 No Vans Live Right Now
