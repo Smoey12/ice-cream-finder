@@ -140,7 +140,7 @@ const LiveMap = () => {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
               {vans
                 .sort((a, b) => {
                   if (!userLocation) return 0;
