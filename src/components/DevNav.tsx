@@ -6,6 +6,7 @@ const links = [
   { to: "/auth/vendor", label: "Vendor Auth" },
   { to: "/map", label: "Live Map" },
   { to: "/dashboard", label: "Vendor Dashboard" },
+  { to: "/admin", label: "⚙️ Admin" },
 ];
 
 const DevNav = () => {
