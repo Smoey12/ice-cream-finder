@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { LogOut, MapPin, Radio, CircleOff, Navigation } from "lucide-react";
 import VanPhotoUpload from "@/components/VanPhotoUpload";
+import BillingToggle from "@/components/BillingToggle";
+import VendorMenuManager from "@/components/VendorMenuManager";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -225,6 +227,18 @@ const VendorDashboard = () => {
               userId={user.id}
               currentPhotoUrl={profile?.van_photo_url || null}
               onPhotoUpdated={() => fetchData()}
+            />
+          )}
+
+          {/* Menu Manager */}
+          {user && <VendorMenuManager userId={user.id} />}
+
+          {/* Billing Plan Toggle */}
+          {user && (
+            <BillingToggle
+              userId={user.id}
+              currentCycle={profile?.billing_cycle || null}
+              onUpdated={() => fetchData()}
             />
           )}
 
