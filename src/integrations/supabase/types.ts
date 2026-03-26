@@ -53,6 +53,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       vendor_locations: {
         Row: {
           id: string
@@ -119,6 +137,103 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          payment_type: string
+          status: string
+          vendor_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          payment_type: string
+          status?: string
+          vendor_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          payment_type?: string
+          status?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_payments_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet: {
+        Row: {
+          balance: number
+          id: string
+          total_earned: number
+          total_withdrawn: number
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          id?: string
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          id?: string
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_payment_id: string | null
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_payment_id?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_payment_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_reference_payment_id_fkey"
+            columns: ["reference_payment_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_payments"
             referencedColumns: ["id"]
           },
         ]
