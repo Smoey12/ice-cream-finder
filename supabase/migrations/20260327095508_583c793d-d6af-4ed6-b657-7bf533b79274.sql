@@ -1,0 +1,1 @@
+UPDATE profiles SET van_photo_url = '/images/demo-van.jpeg' WHERE id = '4e5d1444-64b4-42d4-bea6-fd474807c619';
