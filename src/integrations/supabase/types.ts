@@ -179,6 +179,47 @@ export type Database = {
           },
         ]
       }
+      vendor_route_stops: {
+        Row: {
+          arrival_time: string | null
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          stop_name: string
+          stop_order: number
+          vendor_id: string
+        }
+        Insert: {
+          arrival_time?: string | null
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          stop_name: string
+          stop_order?: number
+          vendor_id: string
+        }
+        Update: {
+          arrival_time?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          stop_name?: string
+          stop_order?: number
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_route_stops_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet: {
         Row: {
           balance: number
