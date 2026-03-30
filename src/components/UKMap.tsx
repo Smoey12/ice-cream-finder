@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from "react-leaflet";
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, Polyline, CircleMarker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,16 @@ interface MenuItem {
   description: string | null;
 }
 
+interface RouteStop {
+  id: string;
+  vendor_id: string;
+  stop_name: string;
+  latitude: number;
+  longitude: number;
+  stop_order: number;
+  arrival_time: string | null;
+}
+
 interface Van {
   id: string;
   vendor_id?: string;
@@ -65,6 +75,15 @@ const UK_CENTER: [number, number] = [54.5, -2.5];
 const UK_BOUNDS: [[number, number], [number, number]] = [
   [49.5, -8.5],
   [60.5, 2.5],
+];
+
+// Route colors per vendor (cycle through)
+const ROUTE_COLORS = [
+  "hsl(340, 65%, 55%)", // strawberry
+  "hsl(160, 45%, 50%)", // mint
+  "hsl(200, 75%, 60%)", // sky
+  "hsl(45, 90%, 55%)",  // vanilla
+  "hsl(25, 60%, 45%)",  // chocolate
 ];
 
 const FitBounds = ({ vans, userLocation }: { vans: Van[]; userLocation?: { lat: number; lng: number } | null }) => {
@@ -94,29 +113,27 @@ const FlyToVan = ({ vanId, vans }: { vanId: string | null; vans: Van[] }) => {
 
 const VanPopup = ({ van }: { van: Van }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [routeStops, setRouteStops] = useState<RouteStop[]>([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
   useEffect(() => {
-    const fetchMenu = async () => {
+    const fetchData = async () => {
       if (!van.vendor_id) { setLoadingMenu(false); return; }
-      const { data } = await supabase
-        .from("vendor_menu_items")
-        .select("id, item_name, price, description")
-        .eq("vendor_id", van.vendor_id);
-      setMenu(data || []);
+      const [menuRes, routeRes] = await Promise.all([
+        supabase.from("vendor_menu_items").select("id, item_name, price, description").eq("vendor_id", van.vendor_id),
+        supabase.from("vendor_route_stops").select("*").eq("vendor_id", van.vendor_id).order("stop_order"),
+      ]);
+      setMenu(menuRes.data || []);
+      setRouteStops(routeRes.data || []);
       setLoadingMenu(false);
     };
-    fetchMenu();
+    fetchData();
   }, [van.vendor_id]);
 
   return (
     <div className="min-w-[220px] max-w-[280px]">
       {van.van_photo_url && (
-        <img
-          src={van.van_photo_url}
-          alt={van.business_name}
-          className="w-full h-28 object-cover rounded-lg mb-2"
-        />
+        <img src={van.van_photo_url} alt={van.business_name} className="w-full h-28 object-cover rounded-lg mb-2" />
       )}
       <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
       <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold mb-2">
@@ -124,26 +141,41 @@ const VanPopup = ({ van }: { van: Van }) => {
         Live Now
       </span>
 
-      {/* Menu items */}
       {loadingMenu ? (
-        <p className="text-xs text-gray-400">Loading menu...</p>
-      ) : menu.length > 0 ? (
-        <div className="border-t pt-2 mt-1">
-          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Menu</p>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
-            {menu.map(item => (
-              <div key={item.id} className="flex justify-between items-start text-xs">
-                <span className="text-gray-700 font-medium">{item.item_name}</span>
-                {item.price != null && (
-                  <span className="text-gray-500 font-semibold ml-2 whitespace-nowrap">
-                    £{item.price.toFixed(2)}
-                  </span>
-                )}
+        <p className="text-xs text-gray-400">Loading...</p>
+      ) : (
+        <>
+          {menu.length > 0 && (
+            <div className="border-t pt-2 mt-1">
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Menu</p>
+              <div className="space-y-1 max-h-28 overflow-y-auto">
+                {menu.map(item => (
+                  <div key={item.id} className="flex justify-between items-start text-xs">
+                    <span className="text-gray-700 font-medium">{item.item_name}</span>
+                    {item.price != null && (
+                      <span className="text-gray-500 font-semibold ml-2 whitespace-nowrap">£{item.price.toFixed(2)}</span>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
+            </div>
+          )}
+
+          {routeStops.length > 0 && (
+            <div className="border-t pt-2 mt-2">
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Today's Route</p>
+              <div className="space-y-1 max-h-24 overflow-y-auto">
+                {routeStops.map(stop => (
+                  <div key={stop.id} className="flex items-center gap-1.5 text-xs">
+                    <span className="text-gray-400 font-mono w-10 shrink-0">{stop.arrival_time || "—"}</span>
+                    <span className="text-gray-700">{stop.stop_name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       <a
         href={`https://www.google.com/maps/dir/?api=1&destination=${van.latitude},${van.longitude}`}
@@ -155,6 +187,64 @@ const VanPopup = ({ van }: { van: Van }) => {
         Get Directions 🗺️
       </a>
     </div>
+  );
+};
+
+const VendorRoutes = ({ vans }: { vans: Van[] }) => {
+  const [allRoutes, setAllRoutes] = useState<Record<string, RouteStop[]>>({});
+
+  useEffect(() => {
+    const vendorIds = vans.map(v => v.vendor_id).filter(Boolean) as string[];
+    if (vendorIds.length === 0) return;
+
+    const fetchRoutes = async () => {
+      const { data } = await supabase
+        .from("vendor_route_stops")
+        .select("*")
+        .in("vendor_id", vendorIds)
+        .order("stop_order");
+
+      if (data) {
+        const grouped: Record<string, RouteStop[]> = {};
+        data.forEach(stop => {
+          if (!grouped[stop.vendor_id]) grouped[stop.vendor_id] = [];
+          grouped[stop.vendor_id].push(stop);
+        });
+        setAllRoutes(grouped);
+      }
+    };
+    fetchRoutes();
+  }, [vans]);
+
+  return (
+    <>
+      {Object.entries(allRoutes).map(([vendorId, stops], idx) => {
+        const color = ROUTE_COLORS[idx % ROUTE_COLORS.length];
+        const positions: [number, number][] = stops.map(s => [s.latitude, s.longitude]);
+
+        return (
+          <div key={vendorId}>
+            <Polyline
+              positions={positions}
+              pathOptions={{ color, weight: 3, opacity: 0.7, dashArray: "8 6" }}
+            />
+            {stops.map(stop => (
+              <CircleMarker
+                key={stop.id}
+                center={[stop.latitude, stop.longitude]}
+                radius={6}
+                pathOptions={{ color, fillColor: "white", fillOpacity: 1, weight: 2 }}
+              >
+                <Tooltip direction="top" offset={[0, -8]} className="route-tooltip">
+                  <span className="text-xs font-semibold">{stop.stop_name}</span>
+                  {stop.arrival_time && <span className="text-xs text-gray-500 ml-1">@ {stop.arrival_time}</span>}
+                </Tooltip>
+              </CircleMarker>
+            ))}
+          </div>
+        );
+      })}
+    </>
   );
 };
 
@@ -181,6 +271,9 @@ const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect }: UKMapProps) =
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
+
+        {/* Vendor route lines and stops */}
+        <VendorRoutes vans={vans} />
 
         {vans.map((van) => (
           <Marker
