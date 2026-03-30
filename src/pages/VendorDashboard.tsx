@@ -10,6 +10,7 @@ import { LogOut, MapPin, Radio, CircleOff, Navigation } from "lucide-react";
 import VanPhotoUpload from "@/components/VanPhotoUpload";
 import BillingToggle from "@/components/BillingToggle";
 import VendorMenuManager from "@/components/VendorMenuManager";
+import VendorRouteEditor from "@/components/VendorRouteEditor";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -232,6 +233,9 @@ const VendorDashboard = () => {
 
           {/* Menu Manager */}
           {user && <VendorMenuManager userId={user.id} />}
+
+          {/* Route Editor */}
+          {user && <VendorRouteEditor userId={user.id} />}
 
           {/* Billing Plan Toggle */}
           {user && (
