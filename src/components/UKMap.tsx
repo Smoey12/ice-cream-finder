@@ -236,6 +236,26 @@ const VanPopup = ({ van }: { van: Van }) => {
           </div>
         </div>
       )}
+
+      {/* Reviews */}
+      {reviews.length > 0 && (
+        <div className="border-t pt-2 mt-2">
+          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">
+            Reviews ({reviews.length})
+          </p>
+          <div className="space-y-1.5 max-h-28 overflow-y-auto">
+            {reviews.map(r => (
+              <div key={r.id} className="bg-gray-50 rounded-md p-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-gray-700">{r.reviewer_name}</span>
+                  <span className="text-[10px]">{"⭐".repeat(r.rating)}</span>
+                </div>
+                {r.comment && <p className="text-[10px] text-gray-500 mt-0.5 leading-tight">{r.comment}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
