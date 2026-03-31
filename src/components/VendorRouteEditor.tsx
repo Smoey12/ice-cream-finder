@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, GripVertical, Clock, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import RouteMapPreview from "@/components/RouteMapPreview";
 
 interface RouteStop {
   id?: string;
