@@ -29,7 +29,7 @@ const RouteMapPreview = ({ stops }: RouteMapPreviewProps) => {
 
   const bounds = positions.length > 0
     ? L.latLngBounds(positions).pad(0.3)
-    : L.latLngBounds([[51.5, -0.13] as [number, number]], [[51.52, -0.1] as [number, number]]);
+    : L.latLngBounds(L.latLng(51.5, -0.13), L.latLng(51.52, -0.1));
 
   return (
     <div className="w-full h-48 rounded-xl overflow-hidden border border-border">
