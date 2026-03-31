@@ -10,6 +10,7 @@ import VendorAuth from "./pages/VendorAuth.tsx";
 import LiveMap from "./pages/LiveMap.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
 import AdminPanel from "./pages/AdminPanel.tsx";
+import CustomerDashboard from "./pages/CustomerDashboard.tsx";
 import DevNav from "./components/DevNav.tsx";
 
 const queryClient = new QueryClient();
