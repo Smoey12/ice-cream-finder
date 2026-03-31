@@ -258,9 +258,27 @@ const VendorRoutes = ({ vans }: { vans: Van[] }) => {
               <CircleMarker
                 key={stop.id}
                 center={[stop.latitude, stop.longitude]}
-                radius={6}
-                pathOptions={{ color, fillColor: "white", fillOpacity: 1, weight: 2 }}
+                radius={7}
+                pathOptions={{ color, fillColor: "white", fillOpacity: 1, weight: 3 }}
               >
+                <Popup className="modern-popup">
+                  <div className="min-w-[160px]">
+                    <p className="font-bold text-sm mb-0.5">📍 {stop.stop_name}</p>
+                    {stop.arrival_time && (
+                      <p className="text-xs text-gray-500 mb-1">🕐 Arriving at {stop.arrival_time}</p>
+                    )}
+                    <p className="text-[10px] text-gray-400">Stop #{stop.stop_order}</p>
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 block text-center text-xs font-bold text-white rounded-lg py-1 px-2"
+                      style={{ background: color }}
+                    >
+                      Directions to Stop 🗺️
+                    </a>
+                  </div>
+                </Popup>
                 <Tooltip direction="top" offset={[0, -8]} className="route-tooltip">
                   <span className="text-xs font-semibold">{stop.stop_name}</span>
                   {stop.arrival_time && <span className="text-xs text-gray-500 ml-1">@ {stop.arrival_time}</span>}
