@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, GripVertical, Clock, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import RouteMapPreview from "@/components/RouteMapPreview";
 
 interface RouteStop {
   id?: string;
@@ -184,7 +185,12 @@ const VendorRouteEditor = ({ userId }: VendorRouteEditorProps) => {
         ))}
       </AnimatePresence>
 
-      <div className="flex gap-2 mt-2">
+      {/* Route Map Preview */}
+      <div className="mt-4">
+        <RouteMapPreview stops={stops} />
+      </div>
+
+      <div className="flex gap-2 mt-4">
         <Button variant="outline" onClick={addStop} className="flex-1">
           <Plus className="w-4 h-4 mr-1" /> Add Stop
         </Button>
