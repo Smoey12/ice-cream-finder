@@ -153,10 +153,17 @@ const VanPopup = ({ van }: { van: Van }) => {
         <img src={van.van_photo_url} alt={van.business_name} className="w-full h-28 object-cover rounded-lg mb-2" />
       )}
       <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
-      <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold mb-2">
-        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-        Live Now
-      </span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold">
+          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+          Live Now
+        </span>
+        {reviews.length > 0 && (
+          <span className="text-xs text-gray-500 font-semibold">
+            {stars(avgRating)} <span className="text-gray-400">({reviews.length})</span>
+          </span>
+        )}
+      </div>
 
       {loadingMenu ? (
         <p className="text-xs text-gray-400">Loading...</p>
