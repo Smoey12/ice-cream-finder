@@ -45,6 +45,14 @@ interface MenuItem {
   description: string | null;
 }
 
+interface Review {
+  id: string;
+  reviewer_name: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
 interface RouteStop {
   id: string;
   vendor_id: string;
