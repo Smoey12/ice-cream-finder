@@ -45,6 +45,14 @@ interface MenuItem {
   description: string | null;
 }
 
+interface Review {
+  id: string;
+  reviewer_name: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
 interface RouteStop {
   id: string;
   vendor_id: string;
@@ -114,21 +122,30 @@ const FlyToVan = ({ vanId, vans }: { vanId: string | null; vans: Van[] }) => {
 const VanPopup = ({ van }: { van: Van }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [routeStops, setRouteStops] = useState<RouteStop[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!van.vendor_id) { setLoadingMenu(false); return; }
-      const [menuRes, routeRes] = await Promise.all([
+      const [menuRes, routeRes, reviewRes] = await Promise.all([
         supabase.from("vendor_menu_items").select("id, item_name, price, description").eq("vendor_id", van.vendor_id),
         supabase.from("vendor_route_stops").select("*").eq("vendor_id", van.vendor_id).order("stop_order"),
+        supabase.from("vendor_reviews").select("*").eq("vendor_id", van.vendor_id).order("created_at", { ascending: false }).limit(5),
       ]);
       setMenu(menuRes.data || []);
       setRouteStops(routeRes.data || []);
+      setReviews(reviewRes.data || []);
       setLoadingMenu(false);
     };
     fetchData();
   }, [van.vendor_id]);
+
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length)
+    : 0;
+
+  const stars = (rating: number) => "⭐".repeat(Math.round(rating));
 
   return (
     <div className="min-w-[220px] max-w-[280px]">
@@ -136,10 +153,17 @@ const VanPopup = ({ van }: { van: Van }) => {
         <img src={van.van_photo_url} alt={van.business_name} className="w-full h-28 object-cover rounded-lg mb-2" />
       )}
       <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
-      <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold mb-2">
-        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-        Live Now
-      </span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold">
+          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+          Live Now
+        </span>
+        {reviews.length > 0 && (
+          <span className="text-xs text-gray-500 font-semibold">
+            {stars(avgRating)} <span className="text-gray-400">({reviews.length})</span>
+          </span>
+        )}
+      </div>
 
       {loadingMenu ? (
         <p className="text-xs text-gray-400">Loading...</p>
@@ -207,6 +231,26 @@ const VanPopup = ({ van }: { van: Van }) => {
                 {item.description && (
                   <p className="text-[10px] text-gray-400 mt-0.5">{item.description}</p>
                 )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Reviews */}
+      {reviews.length > 0 && (
+        <div className="border-t pt-2 mt-2">
+          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">
+            Reviews ({reviews.length})
+          </p>
+          <div className="space-y-1.5 max-h-28 overflow-y-auto">
+            {reviews.map(r => (
+              <div key={r.id} className="bg-gray-50 rounded-md p-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-gray-700">{r.reviewer_name}</span>
+                  <span className="text-[10px]">{"⭐".repeat(r.rating)}</span>
+                </div>
+                {r.comment && <p className="text-[10px] text-gray-500 mt-0.5 leading-tight">{r.comment}</p>}
               </div>
             ))}
           </div>
