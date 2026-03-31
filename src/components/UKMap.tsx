@@ -177,15 +177,41 @@ const VanPopup = ({ van }: { van: Van }) => {
         </>
       )}
 
-      <a
-        href={`https://www.google.com/maps/dir/?api=1&destination=${van.latitude},${van.longitude}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-2 block text-center text-xs font-bold text-white rounded-lg py-1.5 px-3"
-        style={{ background: "linear-gradient(135deg, hsl(200,75%,60%), hsl(160,45%,50%))" }}
-      >
-        Get Directions 🗺️
-      </a>
+      {menu.length > 0 ? (
+        <button
+          onClick={() => {
+            const menuEl = document.getElementById(`popup-menu-${van.id}`);
+            if (menuEl) menuEl.classList.toggle("hidden");
+          }}
+          className="mt-2 block w-full text-center text-xs font-bold text-white rounded-lg py-1.5 px-3 cursor-pointer border-0"
+          style={{ background: "linear-gradient(135deg, hsl(340,65%,55%), hsl(160,45%,50%))" }}
+        >
+          View Full Menu 🍦
+        </button>
+      ) : (
+        <div className="mt-2 text-center text-xs text-gray-400">No menu available</div>
+      )}
+
+      {menu.length > 0 && (
+        <div id={`popup-menu-${van.id}`} className="hidden border-t pt-2 mt-2">
+          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Full Menu</p>
+          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+            {menu.map(item => (
+              <div key={item.id} className="border-b border-gray-100 pb-1">
+                <div className="flex justify-between items-start text-xs">
+                  <span className="text-gray-700 font-semibold">{item.item_name}</span>
+                  {item.price != null && (
+                    <span className="text-green-600 font-bold ml-2 whitespace-nowrap">£{item.price.toFixed(2)}</span>
+                  )}
+                </div>
+                {item.description && (
+                  <p className="text-[10px] text-gray-400 mt-0.5">{item.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
