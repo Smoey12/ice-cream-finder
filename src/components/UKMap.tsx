@@ -122,21 +122,30 @@ const FlyToVan = ({ vanId, vans }: { vanId: string | null; vans: Van[] }) => {
 const VanPopup = ({ van }: { van: Van }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [routeStops, setRouteStops] = useState<RouteStop[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!van.vendor_id) { setLoadingMenu(false); return; }
-      const [menuRes, routeRes] = await Promise.all([
+      const [menuRes, routeRes, reviewRes] = await Promise.all([
         supabase.from("vendor_menu_items").select("id, item_name, price, description").eq("vendor_id", van.vendor_id),
         supabase.from("vendor_route_stops").select("*").eq("vendor_id", van.vendor_id).order("stop_order"),
+        supabase.from("vendor_reviews").select("*").eq("vendor_id", van.vendor_id).order("created_at", { ascending: false }).limit(5),
       ]);
       setMenu(menuRes.data || []);
       setRouteStops(routeRes.data || []);
+      setReviews(reviewRes.data || []);
       setLoadingMenu(false);
     };
     fetchData();
   }, [van.vendor_id]);
+
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length)
+    : 0;
+
+  const stars = (rating: number) => "⭐".repeat(Math.round(rating));
 
   return (
     <div className="min-w-[220px] max-w-[280px]">
