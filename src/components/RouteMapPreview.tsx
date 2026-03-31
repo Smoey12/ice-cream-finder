@@ -23,13 +23,13 @@ const RouteMapPreview = ({ stops }: RouteMapPreviewProps) => {
     );
   }
 
-  const positions: [number, number][] = stops
+  const positions = stops
     .filter(s => s.stop_name.trim())
-    .map(s => [s.latitude, s.longitude]);
+    .map(s => [s.latitude, s.longitude] as [number, number]);
 
   const bounds = positions.length > 0
     ? L.latLngBounds(positions).pad(0.3)
-    : L.latLngBounds([[51.5, -0.13]], [[51.52, -0.1]]);
+    : L.latLngBounds([[51.5, -0.13] as [number, number]], [[51.52, -0.1] as [number, number]]);
 
   return (
     <div className="w-full h-48 rounded-xl overflow-hidden border border-border">
