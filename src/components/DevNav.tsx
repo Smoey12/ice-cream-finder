@@ -7,6 +7,7 @@ const links = [
   { to: "/map", label: "Live Map" },
   { to: "/dashboard", label: "Vendor Dashboard" },
   { to: "/admin", label: "⚙️ Admin" },
+  { to: "/my-card", label: "💳 My Card" },
 ];
 
 const DevNav = () => {

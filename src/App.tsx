@@ -10,6 +10,7 @@ import VendorAuth from "./pages/VendorAuth.tsx";
 import LiveMap from "./pages/LiveMap.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
 import AdminPanel from "./pages/AdminPanel.tsx";
+import CustomerDashboard from "./pages/CustomerDashboard.tsx";
 import DevNav from "./components/DevNav.tsx";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/map" element={<LiveMap />} />
           <Route path="/dashboard" element={<VendorDashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/my-card" element={<CustomerDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
