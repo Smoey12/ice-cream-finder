@@ -28,6 +28,7 @@ const App = () => (
           <Route path="/map" element={<LiveMap />} />
           <Route path="/dashboard" element={<VendorDashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/my-card" element={<CustomerDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
