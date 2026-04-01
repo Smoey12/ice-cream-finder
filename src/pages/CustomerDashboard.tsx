@@ -3,11 +3,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logoIcon from "@/assets/logo-icon.png";
-import { LogOut, MapPin } from "lucide-react";
+import { LogOut, MapPin, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import CustomerWallet from "@/components/CustomerWallet";
 import YummyRewards from "@/components/YummyRewards";
-import CustomerPayment from "@/components/CustomerPayment";
+import AppleWalletCard from "@/components/AppleWalletCard";
 
 const DEMO_CUSTOMER_ID = "00000000-0000-0000-0000-000000000099";
 
@@ -18,7 +18,6 @@ const CustomerDashboard = () => {
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
-  // Use real user id or demo fallback
   const activeUserId = user?.id || DEMO_CUSTOMER_ID;
 
   if (loading) {
@@ -60,15 +59,15 @@ const CustomerDashboard = () => {
           <div className="text-center">
             <h1 className="font-display text-2xl font-bold text-foreground">🍦 My Digital Card</h1>
             <p className="text-muted-foreground font-body text-sm mt-1">
-              Top up, pay, and earn rewards!
+              Your loyalty card &amp; rewards
             </p>
           </div>
 
-          {/* Wallet */}
-          <CustomerWallet key={`wallet-${refreshKey}`} userId={activeUserId} />
+          {/* Apple Wallet Card */}
+          <AppleWalletCard userId={activeUserId} />
 
-          {/* Pay for ice cream */}
-          <CustomerPayment userId={activeUserId} onPurchaseComplete={refresh} />
+          {/* Wallet Balance */}
+          <CustomerWallet key={`wallet-${refreshKey}`} userId={activeUserId} />
 
           {/* Yummy Rewards */}
           <YummyRewards key={`loyalty-${refreshKey}`} userId={activeUserId} onRewardClaimed={refresh} />
