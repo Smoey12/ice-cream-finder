@@ -1,0 +1,4 @@
+ALTER TABLE public.customer_wallets DROP CONSTRAINT customer_wallets_user_id_fkey;
+ALTER TABLE public.customer_transactions DROP CONSTRAINT customer_transactions_user_id_fkey;
+ALTER TABLE public.customer_transactions DROP CONSTRAINT customer_transactions_vendor_id_fkey;
+ALTER TABLE public.customer_loyalty DROP CONSTRAINT customer_loyalty_user_id_fkey;
