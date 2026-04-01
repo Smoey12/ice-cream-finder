@@ -9,12 +9,17 @@ import CustomerWallet from "@/components/CustomerWallet";
 import YummyRewards from "@/components/YummyRewards";
 import CustomerPayment from "@/components/CustomerPayment";
 
+const DEMO_CUSTOMER_ID = "demo-customer-001";
+
 const CustomerDashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  // Use real user id or demo fallback
+  const activeUserId = user?.id || DEMO_CUSTOMER_ID;
 
   if (loading) {
     return (
