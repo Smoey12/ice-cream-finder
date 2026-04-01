@@ -9,7 +9,7 @@ import CustomerWallet from "@/components/CustomerWallet";
 import YummyRewards from "@/components/YummyRewards";
 import CustomerPayment from "@/components/CustomerPayment";
 
-const DEMO_CUSTOMER_ID = "demo-customer-001";
+const DEMO_CUSTOMER_ID = "00000000-0000-0000-0000-000000000099";
 
 const CustomerDashboard = () => {
   const { user, loading, signOut } = useAuth();
