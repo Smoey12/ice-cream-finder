@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
-import { IceCream, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoIcon from "@/assets/logo-icon.png";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import UserDropdown from "@/components/UserDropdown";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-md border-b border-border">
@@ -22,19 +25,25 @@ const Navbar = () => {
         </div>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6">
-          <Link to="/#features" className="text-muted-foreground hover:text-foreground transition-colors font-body text-sm">
-            Features
-          </Link>
-          <Link to="/#pricing" className="text-muted-foreground hover:text-foreground transition-colors font-body text-sm">
-            Pricing
-          </Link>
-          <Link to="/auth/customer">
-            <Button variant="outline" size="sm">Track Vans Free</Button>
-          </Link>
-          <Link to="/auth/vendor">
-            <Button variant="hero" size="sm">Van Operator Login</Button>
-          </Link>
+        <div className="hidden md:flex items-center gap-4">
+          {user ? (
+            <UserDropdown />
+          ) : (
+            <>
+              <Link to="/#features" className="text-muted-foreground hover:text-foreground transition-colors font-body text-sm">
+                Features
+              </Link>
+              <Link to="/#pricing" className="text-muted-foreground hover:text-foreground transition-colors font-body text-sm">
+                Pricing
+              </Link>
+              <Link to="/auth/customer">
+                <Button variant="outline" size="sm">Track Vans Free</Button>
+              </Link>
+              <Link to="/auth/vendor">
+                <Button variant="hero" size="sm">Van Operator Login</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -46,12 +55,25 @@ const Navbar = () => {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-card border-b border-border px-4 pb-4 space-y-3">
-          <Link to="/auth/customer" className="block" onClick={() => setMobileOpen(false)}>
-            <Button variant="outline" className="w-full">Track Vans Free</Button>
-          </Link>
-          <Link to="/auth/vendor" className="block" onClick={() => setMobileOpen(false)}>
-            <Button variant="hero" className="w-full">Van Operator Login</Button>
-          </Link>
+          {user ? (
+            <>
+              <Link to="/my-card" className="block" onClick={() => setMobileOpen(false)}>
+                <Button variant="outline" className="w-full">🍦 My Card</Button>
+              </Link>
+              <Link to="/map" className="block" onClick={() => setMobileOpen(false)}>
+                <Button variant="outline" className="w-full">📍 Find Vans</Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/auth/customer" className="block" onClick={() => setMobileOpen(false)}>
+                <Button variant="outline" className="w-full">Track Vans Free</Button>
+              </Link>
+              <Link to="/auth/vendor" className="block" onClick={() => setMobileOpen(false)}>
+                <Button variant="hero" className="w-full">Van Operator Login</Button>
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>
