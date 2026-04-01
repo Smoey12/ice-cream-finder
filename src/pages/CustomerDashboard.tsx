@@ -65,13 +65,13 @@ const CustomerDashboard = () => {
           </div>
 
           {/* Wallet */}
-          {user && <CustomerWallet key={`wallet-${refreshKey}`} userId={user.id} />}
+          <CustomerWallet key={`wallet-${refreshKey}`} userId={activeUserId} />
 
           {/* Pay for ice cream */}
-          {user && <CustomerPayment userId={user.id} onPurchaseComplete={refresh} />}
+          <CustomerPayment userId={activeUserId} onPurchaseComplete={refresh} />
 
           {/* Yummy Rewards */}
-          {user && <YummyRewards key={`loyalty-${refreshKey}`} userId={user.id} onRewardClaimed={refresh} />}
+          <YummyRewards key={`loyalty-${refreshKey}`} userId={activeUserId} onRewardClaimed={refresh} />
         </motion.div>
       </div>
     </div>
