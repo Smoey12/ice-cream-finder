@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
@@ -10,8 +10,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const VendorAuth = () => {
+  const [searchParams] = useSearchParams();
+  const isFleetParam = searchParams.get("type") === "fleet";
+
   const [isLogin, setIsLogin] = useState(false);
+  const [accountType, setAccountType] = useState<"solo" | "fleet">(isFleetParam ? "fleet" : "solo");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [fleetVanCount, setFleetVanCount] = useState(3);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -19,6 +24,14 @@ const VendorAuth = () => {
   const [submitting, setSubmitting] = useState(false);
   const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
+
+  const baseMonthly = 7.99;
+  const baseYearly = 59.99;
+  const vanCount = accountType === "fleet" ? fleetVanCount : 1;
+  const discount = accountType === "fleet" && fleetVanCount >= 3 ? 0.08 : 0;
+  const totalMonthly = +(baseMonthly * vanCount * (1 - discount)).toFixed(2);
+  const totalYearly = +(baseYearly * vanCount * (1 - discount)).toFixed(2);
+  const displayPrice = billingCycle === "monthly" ? `£${totalMonthly}/month` : `£${totalYearly}/year`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +49,8 @@ const VendorAuth = () => {
           business_name: businessName,
           billing_cycle: billingCycle,
           role: "vendor",
+          account_type: accountType,
+          fleet_van_count: String(vanCount),
         });
         if (error) throw error;
         toast.success("Account created! Check your email to verify.");
@@ -74,33 +89,84 @@ const VendorAuth = () => {
           </p>
 
           {!isLogin && (
-            <div className="mb-6">
-              <div className="flex bg-muted rounded-lg p-1 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle("monthly")}
-                  className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
-                    billingCycle === "monthly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-                  }`}
-                >
-                  Monthly — £7.99/mo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle("yearly")}
-                  className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
-                    billingCycle === "yearly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-                  }`}
-                >
-                  Yearly — £59.99/yr
-                </button>
+            <>
+              {/* Account type toggle */}
+              <div className="mb-4">
+                <label className="font-body text-sm text-muted-foreground block mb-2">Account Type</label>
+                <div className="flex bg-muted rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("solo")}
+                    className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
+                      accountType === "solo" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    }`}
+                  >
+                    🚐 Solo Van
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("fleet")}
+                    className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
+                      accountType === "fleet" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    }`}
+                  >
+                    🏢 Fleet Business
+                  </button>
+                </div>
               </div>
-              {billingCycle === "yearly" && (
-                <p className="text-secondary font-body text-sm font-semibold text-center">
-                  ✨ Save over 37% with annual billing!
-                </p>
+
+              {/* Fleet van count */}
+              {accountType === "fleet" && (
+                <div className="mb-4 bg-accent/10 rounded-xl p-4">
+                  <label className="font-body text-sm text-muted-foreground block mb-2">Number of Vans</label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFleetVanCount(Math.max(2, fleetVanCount - 1))}
+                      className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-foreground"
+                    >−</button>
+                    <span className="font-display text-2xl font-bold text-foreground w-8 text-center">{fleetVanCount}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFleetVanCount(Math.min(50, fleetVanCount + 1))}
+                      className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-foreground"
+                    >+</button>
+                  </div>
+                  {fleetVanCount >= 3 && (
+                    <p className="text-secondary font-body text-xs font-semibold mt-2">✨ 8% fleet discount applied!</p>
+                  )}
+                </div>
               )}
-            </div>
+
+              {/* Billing toggle */}
+              <div className="mb-4">
+                <div className="flex bg-muted rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("monthly")}
+                    className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
+                      billingCycle === "monthly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    }`}
+                  >
+                    Monthly — £{totalMonthly.toFixed(2)}/mo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("yearly")}
+                    className={`flex-1 py-2 rounded-md font-display text-sm font-semibold transition-all ${
+                      billingCycle === "yearly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                    }`}
+                  >
+                    Yearly — £{totalYearly.toFixed(2)}/yr
+                  </button>
+                </div>
+                {billingCycle === "yearly" && (
+                  <p className="text-secondary font-body text-sm font-semibold text-center mt-2">
+                    ✨ Save over 37% with annual billing!
+                  </p>
+                )}
+              </div>
+            </>
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -131,7 +197,7 @@ const VendorAuth = () => {
 
           {!isLogin && (
             <p className="text-muted-foreground font-body text-xs text-center mt-3">
-              After your free trial, you'll be charged {billingCycle === "monthly" ? "£7.99/month" : "£59.99/year"}. Cancel anytime.
+              After your free trial, you'll be charged {displayPrice}. Cancel anytime.
             </p>
           )}
 
@@ -167,6 +233,7 @@ const VendorAuth = () => {
               "Share your live location effortlessly",
               "Build a loyal following",
               "Analytics to optimise your routes",
+              "Fleet? Track all vans from one dashboard",
               "2-week free trial, cancel anytime",
             ].map((item) => (
               <li key={item} className="flex items-start gap-3 font-body text-foreground">
