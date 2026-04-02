@@ -11,6 +11,7 @@ import VanPhotoUpload from "@/components/VanPhotoUpload";
 import BillingToggle from "@/components/BillingToggle";
 import VendorMenuManager from "@/components/VendorMenuManager";
 import VendorRouteEditor from "@/components/VendorRouteEditor";
+import VendorQRScanner from "@/components/VendorQRScanner";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -230,6 +231,9 @@ const VendorDashboard = () => {
               onPhotoUpdated={() => fetchData()}
             />
           )}
+
+          {/* QR Stamp Scanner */}
+          {user && <VendorQRScanner vendorId={user.id} />}
 
           {/* Menu Manager */}
           {user && <VendorMenuManager userId={user.id} />}

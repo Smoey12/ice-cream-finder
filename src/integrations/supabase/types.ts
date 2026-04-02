@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      customer_cashouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_loyalty: {
         Row: {
           free_3_claimed: number
