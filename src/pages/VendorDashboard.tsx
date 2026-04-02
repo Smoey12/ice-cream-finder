@@ -232,6 +232,9 @@ const VendorDashboard = () => {
             />
           )}
 
+          {/* QR Stamp Scanner */}
+          {user && <VendorQRScanner vendorId={user.id} />}
+
           {/* Menu Manager */}
           {user && <VendorMenuManager userId={user.id} />}
 
