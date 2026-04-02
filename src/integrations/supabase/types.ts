@@ -97,42 +97,59 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
           billing_cycle: string | null
           business_name: string | null
           created_at: string
+          fleet_van_count: number
           full_name: string | null
           id: string
           is_active: boolean
+          parent_vendor_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           trial_ends_at: string | null
           updated_at: string
           van_photo_url: string | null
         }
         Insert: {
+          account_type?: string
           billing_cycle?: string | null
           business_name?: string | null
           created_at?: string
+          fleet_van_count?: number
           full_name?: string | null
           id: string
           is_active?: boolean
+          parent_vendor_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           trial_ends_at?: string | null
           updated_at?: string
           van_photo_url?: string | null
         }
         Update: {
+          account_type?: string
           billing_cycle?: string | null
           business_name?: string | null
           created_at?: string
+          fleet_van_count?: number
           full_name?: string | null
           id?: string
           is_active?: boolean
+          parent_vendor_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           trial_ends_at?: string | null
           updated_at?: string
           van_photo_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_parent_vendor_id_fkey"
+            columns: ["parent_vendor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_settings: {
         Row: {
