@@ -26,7 +26,7 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <img src={logoIcon} alt="UK Ice Cream Van Tracker" className="w-32 h-32 mb-4 drop-shadow-lg" />
+            
             <span className="inline-block bg-vanilla text-vanilla-foreground font-display text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
               🍦 The UK's #1 Ice Cream Van Finder
             </span>
