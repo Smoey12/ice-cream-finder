@@ -14,6 +14,7 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
   const [manualCode, setManualCode] = useState("");
   const [scanning, setScanning] = useState(false);
   const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showStampAnimation, setShowStampAnimation] = useState(false);
 
   const processStamp = async (rawValue: string) => {
     // Expected format: icecream-stamp:<user-id>
