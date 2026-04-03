@@ -9,13 +9,6 @@ const HeroSection = () => {
     <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-16">
       {/* Background with logo */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-secondary">
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <img
-            src={logoIcon}
-            alt=""
-            className="w-[600px] h-[600px] object-contain"
-          />
-        </div>
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-foreground/30 to-transparent" />
       </div>
 
