@@ -163,9 +163,53 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
           </div>
         </div>
 
+        {/* Stamp celebration animation */}
+        <AnimatePresence>
+          {showStampAnimation && (
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="flex flex-col items-center justify-center py-6"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.3, 1], rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 0.6, repeat: 2 }}
+                className="text-6xl mb-2"
+              >
+                ⭐
+              </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="font-display text-lg font-bold text-secondary"
+              >
+                Stamp Added!
+              </motion.p>
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 1, x: 0, y: 0 }}
+                  animate={{
+                    opacity: 0,
+                    x: (Math.random() - 0.5) * 200,
+                    y: -100 - Math.random() * 100,
+                  }}
+                  transition={{ duration: 1, delay: i * 0.1 }}
+                  className="absolute text-2xl"
+                >
+                  {["⭐", "🍦", "✨", "🌟", "💫", "🎉"][i]}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Result feedback */}
         <AnimatePresence>
-          {lastResult && (
+          {lastResult && !showStampAnimation && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
