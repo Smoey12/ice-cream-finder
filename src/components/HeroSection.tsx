@@ -1,22 +1,21 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import heroImage from "@/assets/hero-icecream.jpg";
 import logoIcon from "@/assets/logo-icon.png";
 
 const HeroSection = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-16">
-      {/* Background image */}
-      <div className="absolute inset-0">
-        <img
-          src={heroImage}
-          alt="British ice cream van on a sunny street"
-          className="w-full h-full object-cover"
-          width={1344}
-          height={768}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/40 to-transparent" />
+      {/* Background with logo */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-secondary">
+        <div className="absolute inset-0 flex items-center justify-center opacity-10">
+          <img
+            src={logoIcon}
+            alt=""
+            className="w-[600px] h-[600px] object-contain"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-foreground/30 to-transparent" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">

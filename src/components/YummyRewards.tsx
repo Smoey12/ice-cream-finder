@@ -114,7 +114,17 @@ const YummyRewards = ({ userId, onRewardClaimed }: YummyRewardsProps) => {
               <motion.div
                 key={i}
                 initial={false}
-                animate={{ scale: i < stamps ? 1 : 0.8, opacity: i < stamps ? 1 : 0.3 }}
+                animate={{
+                  scale: i < stamps ? [0.8, 1.3, 1] : 0.8,
+                  opacity: i < stamps ? 1 : 0.3,
+                  rotate: i < stamps ? [0, -15, 15, 0] : 0,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 12,
+                  delay: i * 0.1,
+                }}
                 className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl border-2 transition-colors ${
                   i < stamps
                     ? "bg-accent/20 border-accent"
