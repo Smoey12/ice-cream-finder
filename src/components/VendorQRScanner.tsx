@@ -63,6 +63,8 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
         success: true,
         message: `Stamp added! Customer now has ${newStamps} stamp${newStamps !== 1 ? "s" : ""}`,
       });
+      setShowStampAnimation(true);
+      setTimeout(() => setShowStampAnimation(false), 2000);
       toast.success(`⭐ Stamp added! (${newStamps} total)`);
     } catch (err) {
       setLastResult({ success: false, message: "Error adding stamp" });
