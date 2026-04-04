@@ -155,7 +155,10 @@ const VanPopup = ({ van, userId, userLocation }: { van: Van; userId?: string | n
       {van.van_photo_url && (
         <img src={van.van_photo_url} alt={van.business_name} className="w-full h-28 object-cover rounded-lg mb-2" />
       )}
-      <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
+        {van.vendor_id && <FavoriteButton vendorId={van.vendor_id} userId={userId || null} />}
+      </div>
       <div className="flex items-center justify-between mb-2">
         <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold">
           <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
