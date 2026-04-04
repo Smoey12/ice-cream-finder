@@ -54,15 +54,34 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-card border-b border-border px-4 pb-4 space-y-3">
+        <div className="md:hidden bg-card border-b border-border px-4 pb-4 space-y-2">
           {user ? (
             <>
-              <Link to="/my-card" className="block" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" className="w-full">🍦 My Card</Button>
-              </Link>
-              <Link to="/map" className="block" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" className="w-full">📍 Find Vans</Button>
-              </Link>
+              {user.user_metadata?.role === "vendor" ? (
+                <>
+                  <Link to="/dashboard" className="block" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full">📊 Dashboard</Button>
+                  </Link>
+                  <Link to="/map" className="block" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full">📍 Live Map</Button>
+                  </Link>
+                  <Link to="/dashboard?tab=scanner" className="block" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full">📱 QR Scanner</Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/map" className="block" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full">📍 Find Vans</Button>
+                  </Link>
+                  <Link to="/my-card" className="block" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full">🍦 My Rewards</Button>
+                  </Link>
+                  <Link to="/my-card" className="block" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full">💳 Reward Wallet</Button>
+                  </Link>
+                </>
+              )}
             </>
           ) : (
             <>
