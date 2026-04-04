@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, Polyline, CircleMarker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, Polyline, CircleMarker, Tooltip, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
+import FavoriteButton from "@/components/FavoriteButton";
+import StopRequestButton from "@/components/StopRequestButton";
 
 // Fix default marker icon issue with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -77,6 +79,7 @@ interface UKMapProps {
   userLocation?: { lat: number; lng: number } | null;
   selectedVanId?: string | null;
   onVanSelect?: (vanId: string | null) => void;
+  userId?: string | null;
 }
 
 const UK_CENTER: [number, number] = [54.5, -2.5];
@@ -119,7 +122,7 @@ const FlyToVan = ({ vanId, vans }: { vanId: string | null; vans: Van[] }) => {
   return null;
 };
 
-const VanPopup = ({ van }: { van: Van }) => {
+const VanPopup = ({ van, userId, userLocation }: { van: Van; userId?: string | null; userLocation?: { lat: number; lng: number } | null }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [routeStops, setRouteStops] = useState<RouteStop[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -152,7 +155,10 @@ const VanPopup = ({ van }: { van: Van }) => {
       {van.van_photo_url && (
         <img src={van.van_photo_url} alt={van.business_name} className="w-full h-28 object-cover rounded-lg mb-2" />
       )}
-      <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-sm mb-0.5">🍦 {van.business_name || "Ice Cream Van"}</h3>
+        {van.vendor_id && <FavoriteButton vendorId={van.vendor_id} userId={userId || null} />}
+      </div>
       <div className="flex items-center justify-between mb-2">
         <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold">
           <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -256,6 +262,16 @@ const VanPopup = ({ van }: { van: Van }) => {
           </div>
         </div>
       )}
+
+      {/* Stop Request */}
+      {van.vendor_id && (
+        <StopRequestButton
+          vendorId={van.vendor_id}
+          vendorName={van.business_name || "Ice Cream Van"}
+          userLocation={userLocation || null}
+          userId={userId || null}
+        />
+      )}
     </div>
   );
 };
@@ -336,7 +352,7 @@ const VendorRoutes = ({ vans }: { vans: Van[] }) => {
   );
 };
 
-const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect }: UKMapProps) => {
+const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect, userId }: UKMapProps) => {
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden shadow-lg border border-border relative">
       <MapContainer
@@ -371,15 +387,23 @@ const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect }: UKMapProps) =
             eventHandlers={{ click: () => onVanSelect?.(van.id) }}
           >
             <Popup maxWidth={300} className="modern-popup">
-              <VanPopup van={van} />
+              <VanPopup van={van} userId={userId} userLocation={userLocation} />
             </Popup>
           </Marker>
         ))}
 
+        {/* User location with pulse ring */}
         {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
-            <Popup><span className="text-xs font-semibold">📍 You are here</span></Popup>
-          </Marker>
+          <>
+            <Circle
+              center={[userLocation.lat, userLocation.lng]}
+              radius={200}
+              pathOptions={{ color: "hsl(200,75%,60%)", fillColor: "hsl(200,75%,60%)", fillOpacity: 0.1, weight: 1 }}
+            />
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+              <Popup><span className="text-xs font-semibold">📍 You are here</span></Popup>
+            </Marker>
+          </>
         )}
       </MapContainer>
     </div>

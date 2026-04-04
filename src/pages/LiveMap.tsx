@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useVendorMovement } from "@/hooks/useVendorMovement";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import logoIcon from "@/assets/logo-icon.png";
-import { LogOut, MapPin, RefreshCw, Search, X, List, Map as MapIcon } from "lucide-react";
+import { LogOut, MapPin, RefreshCw, Search, X, List, Map as MapIcon, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UKMap from "@/components/UKMap";
 
@@ -29,14 +30,24 @@ const LiveMap = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVanId, setSelectedVanId] = useState<string | null>(null);
   const [showList, setShowList] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
+  const DEMO_CUSTOMER_ID = "00000000-0000-0000-0000-000000000099";
+  const activeUserId = user?.id || DEMO_CUSTOMER_ID;
+
+  // Watch user location continuously
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setUserLocation({ lat: 51.5074, lng: -0.1278 })
-      );
+    if (!navigator.geolocation) {
+      setUserLocation({ lat: 51.5074, lng: -0.1278 });
+      return;
     }
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setUserLocation({ lat: 51.5074, lng: -0.1278 }),
+      { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   const fetchVans = async () => {
@@ -57,7 +68,16 @@ const LiveMap = () => {
     setFetching(false);
   };
 
-  useEffect(() => { fetchVans(); }, []);
+  // Fetch favorites
+  const fetchFavorites = async () => {
+    const { data } = await supabase
+      .from("customer_favorites")
+      .select("vendor_id")
+      .eq("user_id", activeUserId);
+    if (data) setFavoriteIds(data.map(f => f.vendor_id));
+  };
+
+  useEffect(() => { fetchVans(); fetchFavorites(); }, []);
 
   useEffect(() => {
     const channel = supabase
@@ -66,6 +86,9 @@ const LiveMap = () => {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  // Simulate vendor movement along routes
+  const animatedVans = useVendorMovement(vans);
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 3959;
@@ -76,19 +99,25 @@ const LiveMap = () => {
   };
 
   const filteredVans = useMemo(() => {
-    let result = [...vans];
+    let result = [...animatedVans];
+
+    // Filter by favorites if tab active
+    if (showFavorites) {
+      result = result.filter(v => favoriteIds.includes(v.vendor_id));
+    }
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(v => v.business_name?.toLowerCase().includes(q));
     }
     if (userLocation) {
-      result.sort((a, b) => 
+      result.sort((a, b) =>
         getDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude) -
         getDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude)
       );
     }
     return result;
-  }, [vans, searchQuery, userLocation]);
+  }, [animatedVans, searchQuery, userLocation, showFavorites, favoriteIds]);
 
   if (loading) {
     return (
@@ -116,7 +145,7 @@ const LiveMap = () => {
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search vans by name or area..."
+              placeholder="Search vans by name..."
               className="pl-9 pr-8 h-9 rounded-full bg-muted/50 border-border text-sm"
             />
             {searchQuery && (
@@ -127,6 +156,15 @@ const LiveMap = () => {
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              variant={showFavorites ? "default" : "ghost"}
+              size="icon"
+              className="h-9 w-9 rounded-full"
+              onClick={() => { setShowFavorites(!showFavorites); fetchFavorites(); }}
+              title="Favorites"
+            >
+              <Heart className={`w-4 h-4 ${showFavorites ? "fill-current" : ""}`} />
+            </Button>
             <Button
               variant="ghost" size="icon"
               className="h-9 w-9 rounded-full"
@@ -148,12 +186,12 @@ const LiveMap = () => {
 
       {/* Main content */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Map fills entire area */}
         <UKMap
           vans={filteredVans}
           userLocation={userLocation}
           selectedVanId={selectedVanId}
           onVanSelect={setSelectedVanId}
+          userId={activeUserId}
         />
 
         {/* Status pill */}
@@ -161,7 +199,7 @@ const LiveMap = () => {
           <div className="bg-card/90 backdrop-blur-md rounded-full px-3 py-1.5 border border-border shadow-lg flex items-center gap-2 text-xs font-body">
             <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
             <span className="font-semibold text-foreground">{filteredVans.length}</span>
-            <span className="text-muted-foreground">van{filteredVans.length !== 1 ? "s" : ""} live</span>
+            <span className="text-muted-foreground">van{filteredVans.length !== 1 ? "s" : ""} {showFavorites ? "favorited" : "live"}</span>
             {searchQuery && <span className="text-muted-foreground">• filtered</span>}
           </div>
         </div>
@@ -178,19 +216,20 @@ const LiveMap = () => {
             >
               <div className="p-4">
                 <h2 className="font-display text-lg font-bold text-foreground mb-3">
-                  🍦 Nearby Vans
+                  {showFavorites ? "❤️ Favorite Vans" : "🍦 Nearby Vans"}
                 </h2>
                 {filteredVans.length === 0 ? (
                   <div className="text-center py-8">
-                    <div className="text-4xl mb-2">😢</div>
+                    <div className="text-4xl mb-2">{showFavorites ? "💔" : "😢"}</div>
                     <p className="text-sm text-muted-foreground font-body">
-                      {searchQuery ? "No vans match your search" : "No vans live right now"}
+                      {showFavorites ? "No favorite vans yet" : searchQuery ? "No vans match your search" : "No vans live right now"}
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {filteredVans.map(van => {
                       const dist = userLocation ? getDistance(userLocation.lat, userLocation.lng, van.latitude, van.longitude) : null;
+                      const isFav = favoriteIds.includes(van.vendor_id);
                       return (
                         <button
                           key={van.id}
@@ -205,8 +244,11 @@ const LiveMap = () => {
                             ) : (
                               <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0 text-2xl">🚐</div>
                             )}
-                            <div className="min-w-0">
-                              <p className="font-display text-sm font-bold text-foreground truncate">{van.business_name}</p>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between">
+                                <p className="font-display text-sm font-bold text-foreground truncate">{van.business_name}</p>
+                                {isFav && <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500 shrink-0" />}
+                              </div>
                               <div className="flex items-center gap-1 mt-0.5">
                                 <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
                                 <span className="text-secondary font-body text-xs font-semibold">Live</span>
