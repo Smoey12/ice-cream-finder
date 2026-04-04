@@ -122,7 +122,7 @@ const FlyToVan = ({ vanId, vans }: { vanId: string | null; vans: Van[] }) => {
   return null;
 };
 
-const VanPopup = ({ van }: { van: Van }) => {
+const VanPopup = ({ van, userId, userLocation }: { van: Van; userId?: string | null; userLocation?: { lat: number; lng: number } | null }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [routeStops, setRouteStops] = useState<RouteStop[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
