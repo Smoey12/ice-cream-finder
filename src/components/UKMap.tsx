@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, Polyline, CircleMarker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, Polyline, CircleMarker, Tooltip, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
+import FavoriteButton from "@/components/FavoriteButton";
+import StopRequestButton from "@/components/StopRequestButton";
 
 // Fix default marker icon issue with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
