@@ -262,6 +262,16 @@ const VanPopup = ({ van, userId, userLocation }: { van: Van; userId?: string | n
           </div>
         </div>
       )}
+
+      {/* Stop Request */}
+      {van.vendor_id && (
+        <StopRequestButton
+          vendorId={van.vendor_id}
+          vendorName={van.business_name || "Ice Cream Van"}
+          userLocation={userLocation || null}
+          userId={userId || null}
+        />
+      )}
     </div>
   );
 };
