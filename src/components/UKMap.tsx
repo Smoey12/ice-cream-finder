@@ -352,7 +352,7 @@ const VendorRoutes = ({ vans }: { vans: Van[] }) => {
   );
 };
 
-const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect }: UKMapProps) => {
+const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect, userId }: UKMapProps) => {
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden shadow-lg border border-border relative">
       <MapContainer
@@ -387,15 +387,23 @@ const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect }: UKMapProps) =
             eventHandlers={{ click: () => onVanSelect?.(van.id) }}
           >
             <Popup maxWidth={300} className="modern-popup">
-              <VanPopup van={van} />
+              <VanPopup van={van} userId={userId} userLocation={userLocation} />
             </Popup>
           </Marker>
         ))}
 
+        {/* User location with pulse ring */}
         {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
-            <Popup><span className="text-xs font-semibold">📍 You are here</span></Popup>
-          </Marker>
+          <>
+            <Circle
+              center={[userLocation.lat, userLocation.lng]}
+              radius={200}
+              pathOptions={{ color: "hsl(200,75%,60%)", fillColor: "hsl(200,75%,60%)", fillOpacity: 0.1, weight: 1 }}
+            />
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+              <Popup><span className="text-xs font-semibold">📍 You are here</span></Popup>
+            </Marker>
+          </>
         )}
       </MapContainer>
     </div>
