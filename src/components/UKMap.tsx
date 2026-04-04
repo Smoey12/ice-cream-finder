@@ -79,6 +79,7 @@ interface UKMapProps {
   userLocation?: { lat: number; lng: number } | null;
   selectedVanId?: string | null;
   onVanSelect?: (vanId: string | null) => void;
+  userId?: string | null;
 }
 
 const UK_CENTER: [number, number] = [54.5, -2.5];
