@@ -236,6 +236,9 @@ const VendorDashboard = () => {
           {/* QR Stamp Scanner */}
           {user && <VendorQRScanner vendorId={user.id} />}
 
+          {/* Stop Requests */}
+          {user && <VendorStopRequests vendorId={user.id} />}
+
           {/* Menu Manager */}
           {user && <VendorMenuManager userId={user.id} />}
 
