@@ -12,6 +12,7 @@ import BillingToggle from "@/components/BillingToggle";
 import VendorMenuManager from "@/components/VendorMenuManager";
 import VendorRouteEditor from "@/components/VendorRouteEditor";
 import VendorQRScanner from "@/components/VendorQRScanner";
+import VendorStopRequests from "@/components/VendorStopRequests";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
