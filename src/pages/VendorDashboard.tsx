@@ -235,7 +235,10 @@ const VendorDashboard = () => {
           )}
 
           {/* QR Stamp Scanner */}
-          {user && <VendorQRScanner vendorId={user.id} />}
+          {user && <VendorQRScanner vendorId={user.id} onPaymentReceived={() => fetchData()} />}
+
+          {/* Vendor Wallet */}
+          {user && <VendorWallet vendorId={user.id} />}
 
           {/* Stop Requests */}
           {user && <VendorStopRequests vendorId={user.id} />}
