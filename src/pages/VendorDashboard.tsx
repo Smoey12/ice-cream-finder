@@ -13,6 +13,7 @@ import VendorMenuManager from "@/components/VendorMenuManager";
 import VendorRouteEditor from "@/components/VendorRouteEditor";
 import VendorQRScanner from "@/components/VendorQRScanner";
 import VendorStopRequests from "@/components/VendorStopRequests";
+import VendorWallet from "@/components/VendorWallet";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
