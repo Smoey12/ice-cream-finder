@@ -55,22 +55,21 @@ const CustomerDashboard = () => {
 
       <div className="container mx-auto px-4 py-8 max-w-lg">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          {/* Header */}
           <div className="text-center">
-            <h1 className="font-display text-2xl font-bold text-foreground">🍦 My Rewards</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">🍦 My Card</h1>
             <p className="text-muted-foreground font-body text-sm mt-1">
-              Show your QR code to earn stamps & cash out rewards
+              Top up, pay at vans & earn rewards — all from your QR code
             </p>
           </div>
 
-          {/* QR Code Card */}
-          <CustomerQRCode userId={activeUserId} />
-
-          {/* Reward Wallet with Cashout */}
-          <WalletCashout key={`wallet-${refreshKey}`} userId={activeUserId} />
+          {/* QR Code Card with balance & top-up */}
+          <CustomerQRCode key={`qr-${refreshKey}`} userId={activeUserId} onBalanceChanged={refresh} />
 
           {/* Yummy Rewards */}
           <YummyRewards key={`loyalty-${refreshKey}`} userId={activeUserId} onRewardClaimed={refresh} />
+
+          {/* Reward Wallet Cashout */}
+          <WalletCashout key={`wallet-${refreshKey}`} userId={activeUserId} />
         </motion.div>
       </div>
     </div>

@@ -1,35 +1,43 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanLine, CheckCircle, XCircle, Star } from "lucide-react";
+import { ScanLine, CheckCircle, XCircle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface VendorQRScannerProps {
   vendorId: string;
+  onPaymentReceived?: () => void;
 }
 
-const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
+const VendorQRScanner = ({ vendorId, onPaymentReceived }: VendorQRScannerProps) => {
   const [manualCode, setManualCode] = useState("");
+  const [chargeAmount, setChargeAmount] = useState("");
   const [scanning, setScanning] = useState(false);
   const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [showStampAnimation, setShowStampAnimation] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [pendingQR, setPendingQR] = useState<string | null>(null);
 
-  const processStamp = async (rawValue: string) => {
-    // Expected format: icecream-stamp:<user-id>
-    const match = rawValue.match(/^icecream-stamp:(.+)$/);
-    if (!match) {
+  const processQR = async (rawValue: string, amount?: number) => {
+    setScanning(true);
+
+    // New format: icecream-pay:<user-id>:<balance>
+    const payMatch = rawValue.match(/^icecream-pay:(.+):(.+)$/);
+    // Legacy format: icecream-stamp:<user-id>
+    const stampMatch = rawValue.match(/^icecream-stamp:(.+)$/);
+
+    const customerId = payMatch ? payMatch[1] : stampMatch ? stampMatch[1] : null;
+
+    if (!customerId) {
       setLastResult({ success: false, message: "Invalid QR code" });
-      toast.error("Invalid QR code — not a customer loyalty card");
+      toast.error("Invalid QR code");
+      setScanning(false);
       return;
     }
 
-    const customerId = match[1];
-    setScanning(true);
-
     try {
-      // Fetch or create loyalty record
+      // 1. Always add a loyalty stamp
       const { data: loyalty } = await supabase
         .from("customer_loyalty")
         .select("*")
@@ -50,33 +58,106 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
         });
       }
 
-      // Record the transaction
-      await supabase.from("customer_transactions").insert({
-        user_id: customerId,
-        vendor_id: vendorId,
-        amount: 0,
-        type: "stamp",
-        description: "⭐ Loyalty stamp earned",
-      });
-
       const newStamps = (loyalty?.stamps || 0) + 1;
-      setLastResult({
-        success: true,
-        message: `Stamp added! Customer now has ${newStamps} stamp${newStamps !== 1 ? "s" : ""}`,
-      });
-      setShowStampAnimation(true);
-      setTimeout(() => setShowStampAnimation(false), 2000);
-      toast.success(`⭐ Stamp added! (${newStamps} total)`);
-    } catch (err) {
-      setLastResult({ success: false, message: "Error adding stamp" });
-      toast.error("Failed to add stamp");
+
+      // 2. If there's a charge amount, process payment from customer wallet to vendor wallet
+      if (amount && amount > 0) {
+        // Get customer wallet
+        const { data: custWallet } = await supabase
+          .from("customer_wallets")
+          .select("balance")
+          .eq("user_id", customerId)
+          .single();
+
+        const custBalance = custWallet?.balance || 0;
+
+        if (custBalance < amount) {
+          setLastResult({ success: false, message: `Insufficient funds. Customer has £${custBalance.toFixed(2)}` });
+          toast.error(`Customer only has £${custBalance.toFixed(2)}`);
+          setScanning(false);
+          return;
+        }
+
+        // Deduct from customer wallet
+        await supabase.from("customer_wallets").update({
+          balance: custBalance - amount,
+          updated_at: new Date().toISOString(),
+        }).eq("user_id", customerId);
+
+        // Record customer transaction
+        await supabase.from("customer_transactions").insert({
+          user_id: customerId,
+          vendor_id: vendorId,
+          amount,
+          type: "purchase",
+          description: `🍦 Paid £${amount.toFixed(2)} at ice cream van`,
+        });
+
+        // Add to vendor wallet
+        const { data: vendWallet } = await supabase
+          .from("vendor_wallets")
+          .select("*")
+          .eq("vendor_id", vendorId)
+          .single();
+
+        if (vendWallet) {
+          await supabase.from("vendor_wallets").update({
+            balance: vendWallet.balance + amount,
+            total_earned: vendWallet.total_earned + amount,
+            updated_at: new Date().toISOString(),
+          }).eq("vendor_id", vendorId);
+        } else {
+          await supabase.from("vendor_wallets").insert({
+            vendor_id: vendorId,
+            balance: amount,
+            total_earned: amount,
+          });
+        }
+
+        // Record vendor payment
+        await supabase.from("vendor_payments").insert({
+          vendor_id: vendorId,
+          amount,
+          payment_type: "qr_payment",
+          description: `💳 QR payment received — £${amount.toFixed(2)}`,
+        });
+
+        setLastResult({
+          success: true,
+          message: `💳 £${amount.toFixed(2)} received! ⭐ Stamp #${newStamps} added`,
+        });
+        toast.success(`£${amount.toFixed(2)} received + stamp added!`);
+        onPaymentReceived?.();
+      } else {
+        // Stamp only (no payment)
+        await supabase.from("customer_transactions").insert({
+          user_id: customerId,
+          vendor_id: vendorId,
+          amount: 0,
+          type: "stamp",
+          description: "⭐ Loyalty stamp earned",
+        });
+
+        setLastResult({
+          success: true,
+          message: `⭐ Stamp added! Customer has ${newStamps} stamp${newStamps !== 1 ? "s" : ""}`,
+        });
+        toast.success(`⭐ Stamp #${newStamps} added!`);
+      }
+
+      setShowAnimation(true);
+      setTimeout(() => setShowAnimation(false), 2000);
+      setChargeAmount("");
+      setPendingQR(null);
+    } catch {
+      setLastResult({ success: false, message: "Error processing scan" });
+      toast.error("Failed to process scan");
     }
 
     setScanning(false);
   };
 
   const handleCameraScan = async () => {
-    // Use the native BarcodeDetector API if available, otherwise prompt manual entry
     if ("BarcodeDetector" in window) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -91,7 +172,15 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
             const barcodes = await detector.detect(video);
             if (barcodes.length > 0) {
               stream.getTracks().forEach(t => t.stop());
-              processStamp(barcodes[0].rawValue);
+              const raw = barcodes[0].rawValue;
+              setPendingQR(raw);
+              // If charge amount already entered, process immediately
+              const amt = parseFloat(chargeAmount);
+              if (amt > 0) {
+                processQR(raw, amt);
+              } else {
+                toast.info("QR scanned! Enter charge amount or tap 'Stamp Only'");
+              }
               return;
             }
             requestAnimationFrame(scan);
@@ -100,49 +189,65 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
           }
         };
         scan();
-
-        // Auto-stop after 15 seconds
-        setTimeout(() => {
-          stream.getTracks().forEach(t => t.stop());
-        }, 15000);
+        setTimeout(() => stream.getTracks().forEach(t => t.stop()), 15000);
       } catch {
-        toast.error("Camera access denied. Use manual entry instead.");
+        toast.error("Camera access denied. Use manual entry.");
       }
     } else {
-      toast.info("Camera scanning not supported on this device. Use manual code entry below.");
+      toast.info("Camera scanning not supported. Use manual code entry below.");
     }
   };
 
   const handleManualSubmit = () => {
     if (!manualCode.trim()) return;
-    // Allow pasting the full QR value or just the user ID
-    const value = manualCode.includes("icecream-stamp:")
+    const value = manualCode.includes("icecream-")
       ? manualCode.trim()
-      : `icecream-stamp:${manualCode.trim()}`;
-    processStamp(value);
+      : `icecream-pay:${manualCode.trim()}:0`;
+    setPendingQR(value);
+    const amt = parseFloat(chargeAmount);
+    if (amt > 0) {
+      processQR(value, amt);
+    } else {
+      toast.info("Code entered! Set charge amount or tap 'Stamp Only'");
+    }
     setManualCode("");
+  };
+
+  const handleChargeSubmit = () => {
+    if (!pendingQR) {
+      toast.error("Scan a QR code first");
+      return;
+    }
+    const amt = parseFloat(chargeAmount);
+    if (isNaN(amt) || amt <= 0) {
+      toast.error("Enter a valid charge amount");
+      return;
+    }
+    processQR(pendingQR, amt);
+  };
+
+  const handleStampOnly = () => {
+    if (!pendingQR) {
+      toast.error("Scan a QR code first");
+      return;
+    }
+    processQR(pendingQR);
   };
 
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
       <div className="bg-gradient-to-r from-accent to-primary p-5 text-center">
         <h2 className="font-display text-xl font-bold text-primary-foreground">
-          ⭐ Stamp Scanner
+          📱 Scan & Charge
         </h2>
         <p className="text-primary-foreground/70 font-body text-xs mt-1">
-          Scan customer QR codes to award loyalty stamps
+          Scan customer QR to collect payment & add stamps
         </p>
       </div>
 
       <div className="p-5 space-y-4">
-        {/* Camera scan button */}
-        <Button
-          onClick={handleCameraScan}
-          variant="hero"
-          size="lg"
-          className="w-full"
-          disabled={scanning}
-        >
+        {/* Camera scan */}
+        <Button onClick={handleCameraScan} variant="hero" size="lg" className="w-full" disabled={scanning}>
           <ScanLine className="w-5 h-5 mr-2" />
           {scanning ? "Processing…" : "Scan Customer QR Code"}
         </Button>
@@ -157,28 +262,68 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
               placeholder="Customer card ID"
               onKeyDown={e => e.key === "Enter" && handleManualSubmit()}
             />
-            <Button variant="mint" onClick={handleManualSubmit} disabled={!manualCode.trim() || scanning}>
-              Add Stamp
+            <Button variant="outline" onClick={handleManualSubmit} disabled={!manualCode.trim() || scanning}>
+              Enter
             </Button>
           </div>
         </div>
 
-        {/* Stamp celebration animation */}
+        {/* Pending QR indicator */}
+        {pendingQR && (
+          <div className="bg-secondary/10 border border-secondary rounded-lg p-3 text-center">
+            <p className="text-sm font-semibold text-secondary">✅ Customer QR loaded</p>
+          </div>
+        )}
+
+        {/* Charge amount */}
+        <div className="border border-border rounded-xl p-4 space-y-3">
+          <p className="font-body text-sm font-semibold text-foreground flex items-center gap-1.5">
+            <CreditCard className="w-4 h-4 text-primary" /> Charge Amount
+          </p>
+          <div className="grid grid-cols-4 gap-2">
+            {[2, 3, 5, 10].map(amt => (
+              <Button key={amt} variant="outline" size="sm" className="font-display font-bold text-xs"
+                onClick={() => setChargeAmount(String(amt))}>
+                £{amt}
+              </Button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">£</span>
+              <Input
+                type="number" min="0.01" step="0.01"
+                value={chargeAmount}
+                onChange={e => setChargeAmount(e.target.value)}
+                placeholder="0.00"
+                className="pl-7"
+              />
+            </div>
+            <Button variant="mint" onClick={handleChargeSubmit} disabled={!pendingQR || !chargeAmount || scanning}>
+              Charge
+            </Button>
+          </div>
+          <Button variant="outline" size="sm" className="w-full" onClick={handleStampOnly} disabled={!pendingQR || scanning}>
+            ⭐ Stamp Only (no charge)
+          </Button>
+        </div>
+
+        {/* Animation */}
         <AnimatePresence>
-          {showStampAnimation && (
+          {showAnimation && (
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className="flex flex-col items-center justify-center py-6"
+              className="flex flex-col items-center justify-center py-6 relative"
             >
               <motion.div
                 animate={{ scale: [1, 1.3, 1], rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 0.6, repeat: 2 }}
                 className="text-6xl mb-2"
               >
-                ⭐
+                💳
               </motion.div>
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
@@ -186,38 +331,31 @@ const VendorQRScanner = ({ vendorId }: VendorQRScannerProps) => {
                 transition={{ delay: 0.3 }}
                 className="font-display text-lg font-bold text-secondary"
               >
-                Stamp Added!
+                Payment Processed!
               </motion.p>
               {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
+                <motion.div key={i}
                   initial={{ opacity: 1, x: 0, y: 0 }}
-                  animate={{
-                    opacity: 0,
-                    x: (Math.random() - 0.5) * 200,
-                    y: -100 - Math.random() * 100,
-                  }}
+                  animate={{ opacity: 0, x: (Math.random() - 0.5) * 200, y: -100 - Math.random() * 100 }}
                   transition={{ duration: 1, delay: i * 0.1 }}
                   className="absolute text-2xl"
                 >
-                  {["⭐", "🍦", "✨", "🌟", "💫", "🎉"][i]}
+                  {["💳", "⭐", "🍦", "✨", "💰", "🎉"][i]}
                 </motion.div>
               ))}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Result feedback */}
+        {/* Result */}
         <AnimatePresence>
-          {lastResult && !showStampAnimation && (
+          {lastResult && !showAnimation && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className={`flex items-center gap-3 p-4 rounded-xl border-2 ${
-                lastResult.success
-                  ? "border-secondary bg-secondary/10"
-                  : "border-destructive bg-destructive/10"
+                lastResult.success ? "border-secondary bg-secondary/10" : "border-destructive bg-destructive/10"
               }`}
             >
               {lastResult.success ? (

@@ -13,6 +13,7 @@ import VendorMenuManager from "@/components/VendorMenuManager";
 import VendorRouteEditor from "@/components/VendorRouteEditor";
 import VendorQRScanner from "@/components/VendorQRScanner";
 import VendorStopRequests from "@/components/VendorStopRequests";
+import VendorWallet from "@/components/VendorWallet";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -234,7 +235,10 @@ const VendorDashboard = () => {
           )}
 
           {/* QR Stamp Scanner */}
-          {user && <VendorQRScanner vendorId={user.id} />}
+          {user && <VendorQRScanner vendorId={user.id} onPaymentReceived={() => fetchData()} />}
+
+          {/* Vendor Wallet */}
+          {user && <VendorWallet vendorId={user.id} />}
 
           {/* Stop Requests */}
           {user && <VendorStopRequests vendorId={user.id} />}
