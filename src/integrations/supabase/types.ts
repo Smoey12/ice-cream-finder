@@ -263,6 +263,30 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_cashouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          status: string
+          vendor_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          status?: string
+          vendor_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          status?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
       vendor_locations: {
         Row: {
           id: string
@@ -446,6 +470,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendor_wallets: {
+        Row: {
+          balance: number
+          id: string
+          total_earned: number
+          total_withdrawn: number
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          balance?: number
+          id?: string
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          balance?: number
+          id?: string
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: []
       }
       wallet: {
         Row: {
