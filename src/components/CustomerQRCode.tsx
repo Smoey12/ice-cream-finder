@@ -34,6 +34,34 @@ const CustomerQRCode = ({ userId, onBalanceChanged }: CustomerQRCodeProps) => {
 
   useEffect(() => { fetchBalance(); }, [fetchBalance]);
 
+  // Realtime: listen for purchases (vendor charges) and refresh balance + notify
+  useEffect(() => {
+    const channel = supabase
+      .channel(`customer-payments-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "customer_transactions",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload: any) => {
+          const tx = payload.new;
+          if (tx.type === "purchase") {
+            toast(`💳 Payment of £${Number(tx.amount).toFixed(2)}`, {
+              description: tx.description || "Ice cream purchase",
+              duration: 6000,
+            });
+            fetchBalance();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, fetchBalance]);
+
   // QR encodes user ID + current balance so vendor scanner can read it
   const qrValue = `icecream-pay:${userId}:${balance.toFixed(2)}`;
 
