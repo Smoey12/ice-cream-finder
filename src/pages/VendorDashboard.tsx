@@ -14,6 +14,7 @@ import VendorRouteEditor from "@/components/VendorRouteEditor";
 import VendorQRScanner from "@/components/VendorQRScanner";
 import VendorStopRequests from "@/components/VendorStopRequests";
 import VendorWallet from "@/components/VendorWallet";
+import VendorTransactionHistory from "@/components/VendorTransactionHistory";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -242,6 +243,9 @@ const VendorDashboard = () => {
 
           {/* Stop Requests */}
           {user && <VendorStopRequests vendorId={user.id} />}
+
+          {/* Transaction History */}
+          {user && <VendorTransactionHistory vendorId={user.id} />}
 
           {/* Menu Manager */}
           {user && <VendorMenuManager userId={user.id} />}
