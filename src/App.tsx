@@ -9,6 +9,7 @@ import CustomerAuth from "./pages/CustomerAuth.tsx";
 import VendorAuth from "./pages/VendorAuth.tsx";
 import LiveMap from "./pages/LiveMap.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
+import FleetDashboard from "./pages/FleetDashboard.tsx";
 import AdminPanel from "./pages/AdminPanel.tsx";
 import CustomerDashboard from "./pages/CustomerDashboard.tsx";
 import EmailConfirmed from "./pages/EmailConfirmed.tsx";

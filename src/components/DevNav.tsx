@@ -2,12 +2,13 @@ import { Link, useLocation } from "react-router-dom";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/auth/customer", label: "Customer Auth" },
-  { to: "/auth/vendor", label: "Vendor Auth" },
-  { to: "/map", label: "Live Map" },
-  { to: "/dashboard", label: "Vendor Dashboard" },
-  { to: "/admin", label: "⚙️ Admin" },
+  { to: "/auth/customer", label: "🔐 Customer Auth" },
+  { to: "/auth/vendor", label: "🔐 Vendor Auth" },
+  { to: "/map", label: "🗺️ Live Map" },
   { to: "/my-card", label: "💳 My Card" },
+  { to: "/dashboard", label: "🚐 Vendor Dash" },
+  { to: "/fleet", label: "🏢 Fleet Dash" },
+  { to: "/admin", label: "⚙️ Admin" },
 ];
 
 const DevNav = () => {
