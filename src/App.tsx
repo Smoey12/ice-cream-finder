@@ -29,6 +29,7 @@ const App = () => (
           <Route path="/auth/vendor" element={<VendorAuth />} />
           <Route path="/map" element={<LiveMap />} />
           <Route path="/dashboard" element={<VendorDashboard />} />
+          <Route path="/fleet" element={<FleetDashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/my-card" element={<CustomerDashboard />} />
           <Route path="/email-confirmed" element={<EmailConfirmed />} />
