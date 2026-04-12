@@ -1,3 +1,4 @@
-# Welcome to your Lovable project
+UK Icecream Tracker 🇬🇧
 
-TODO: Document your project here
+to help customers find what they love for free,
+to help business run better at afordable price
