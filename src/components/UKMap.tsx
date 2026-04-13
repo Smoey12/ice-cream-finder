@@ -124,7 +124,6 @@ const FlyToVan = ({ vanId, vans, frozenPositions }: { vanId: string | null; vans
   return null;
 };
 
-
 const VanPopup = ({ van, userId, userLocation }: { van: Van; userId?: string | null; userLocation?: { lat: number; lng: number } | null }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [routeStops, setRouteStops] = useState<RouteStop[]>([]);
@@ -374,7 +373,8 @@ const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect, userId }: UKMap
         <FitBounds vans={vans} userLocation={userLocation} />
         <FlyToVan vanId={selectedVanId || null} vans={vans} frozenPositions={frozenPositions} />
 
-        <TileLayer
+<FlyToVan vanId={selectedVanId || null} vans={vans} frozenPositions={frozenPositions} />
+        <TileLayer 
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
@@ -415,11 +415,6 @@ autoPan={false} and closeOnClick={false} to Popup for stability
         autoPan={false}
         closeOnClick={false}
       >
-        <VanPopup van={van} userId={userId} userLocation={userLocation} />
-      </Popup>
-    </Marker>
-  );
-})}
         <VanPopup van={van} userId={userId} userLocation={userLocation} />
       </Popup>
     </Marker>
