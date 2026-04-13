@@ -354,6 +354,7 @@ const VendorRoutes = ({ vans }: { vans: Van[] }) => {
 
 const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect, userId }: UKMapProps) => {
   return (
+state const [frozenPositions, setFrozenPositions] = useState<Record<string, [number, number]>>({});
     <div className="w-full h-full rounded-2xl overflow-hidden shadow-lg border border-border relative">
       <MapContainer
         center={UK_CENTER}
