@@ -111,16 +111,19 @@ const FitBounds = ({ vans, userLocation }: { vans: Van[]; userLocation?: { lat: 
   return null;
 };
 
-const FlyToVan = ({ vanId, vans }: { vanId: string | null; vans: Van[] }) => {
+const FlyToVan = ({ vanId, vans, frozenPositions }: { vanId: string | null; vans: Van[]; frozenPositions: Record<string, [number, number]> }) => {
   const map = useMap();
   useEffect(() => {
     if (vanId) {
+      // Don't fly if popup is open for this van (position is frozen)
+      if (frozenPositions[vanId]) return;
       const van = vans.find(v => v.id === vanId);
       if (van) map.flyTo([van.latitude, van.longitude], 14, { duration: 1 });
     }
-  }, [vanId, map, vans]);
+  }, [vanId, map, vans, frozenPositions]);
   return null;
 };
+
 
 const VanPopup = ({ van, userId, userLocation }: { van: Van; userId?: string | null; userLocation?: { lat: number; lng: number } | null }) => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
@@ -370,7 +373,7 @@ state const [frozenPositions, setFrozenPositions] = useState<Record<string, [num
       >
         <ZoomControl position="bottomright" />
         <FitBounds vans={vans} userLocation={userLocation} />
-        <FlyToVan vanId={selectedVanId || null} vans={vans} />
+        <FlyToVan vanId={selectedVanId || null} vans={vans} frozenPositions={frozenPositions} />
 
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
@@ -381,6 +384,49 @@ state const [frozenPositions, setFrozenPositions] = useState<Record<string, [num
         <VendorRoutes vans={vans} />
 
         {vans.map((van) => (
+autoPan={false} and closeOnClick={false} to Popup for stability
+{vans.map((van) => {
+  const position: [number, number] = frozenPositions[van.id]
+    ? frozenPositions[van.id]
+    : [van.latitude, van.longitude];
+
+  return (
+    <Marker
+      key={van.id}
+      position={position}
+      icon={vanIcon}
+      eventHandlers={{
+        click: () => onVanSelect?.(van.id),
+        popupopen: () => {
+          setFrozenPositions(prev => ({
+            ...prev,
+            [van.id]: [van.latitude, van.longitude]
+          }));
+        },
+        popupclose: () => {
+          setFrozenPositions(prev => {
+            const next = { ...prev };
+            delete next[van.id];
+            return next;
+          });
+        }
+      }}
+    >
+    <Popup
+  maxWidth={300}
+  className="modern-popup"
+  autoPan={false}
+  closeOnClick={false}
+  keepInView={false}  // <-- Added
+>
+        autoPan={false}
+        closeOnClick={false}
+      >
+        <VanPopup van={van} userId={userId} userLocation={userLocation} />
+      </Popup>
+    </Marker>
+  );
+})}
           <Marker
             key={van.id}
             position={[van.latitude, van.longitude]}
