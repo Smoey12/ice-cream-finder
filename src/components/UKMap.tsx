@@ -381,8 +381,6 @@ const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect, userId }: UKMap
 
         {/* Vendor route lines and stops */}
         <VendorRoutes vans={vans} />
-
-        {vans.map((van) => (
 autoPan={false} and closeOnClick={false} to Popup for stability
 {vans.map((van) => {
   const position: [number, number] = frozenPositions[van.id]
@@ -411,16 +409,17 @@ autoPan={false} and closeOnClick={false} to Popup for stability
         }
       }}
     >
-    <Popup
-  maxWidth={300}
-  className="modern-popup"
-  autoPan={false}
-  closeOnClick={false}
-  keepInView={false}  // <-- Added
->
+      <Popup
+        maxWidth={300}
+        className="modern-popup"
         autoPan={false}
         closeOnClick={false}
       >
+        <VanPopup van={van} userId={userId} userLocation={userLocation} />
+      </Popup>
+    </Marker>
+  );
+})}
         <VanPopup van={van} userId={userId} userLocation={userLocation} />
       </Popup>
     </Marker>
