@@ -1,4 +1,5 @@
-UK Icecream Tracker 🇬🇧
+ScoopTrackUK is a...
+UK Icecream Van Tracker 🇬🇧
 
 to help customers find what they love for free,
-to help business run better at afordable price
+to help business run better at afordable price's
