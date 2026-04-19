@@ -352,8 +352,6 @@ const VendorRoutes = ({ vans }: { vans: Van[] }) => {
       })}
     </>
   );
-state const [frozenPositions, setFrozenPositions] = useState<Record<string, [number, number]>>({});};
-
 const UKMap = ({ vans, userLocation, selectedVanId, onVanSelect, userId }: UKMapProps) => {
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden shadow-lg border border-border relative">
