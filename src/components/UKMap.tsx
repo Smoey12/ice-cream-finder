@@ -348,10 +348,7 @@ const VendorRoutes = ({ vans }: { vans: Van[] }) => {
               </CircleMarker>
             ))}
           </div>
-        );
-      })}
-    </>
-  }
+};
 const [frozenPositions, setFrozenPositions] = useState<Record<string, [number, number]>>({});
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden shadow-lg border border-border relative">
